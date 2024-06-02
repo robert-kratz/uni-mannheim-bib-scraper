@@ -29,9 +29,6 @@ async function fetchAndParseHTML(url) {
                 }
                 const date = new Date();
 
-                //date is two hours behind
-                date.setHours(date.getHours() + 2);
-
                 return {
                     time: date.toISOString(),
                     percentage,
