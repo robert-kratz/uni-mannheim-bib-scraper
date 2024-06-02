@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org/) application which scrapes the current oppucancy of the [University of Toronto Libraries](https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/) and displays it in a more user-friendly way.
+This is a [Next.js](https://nextjs.org/) application which scrapes the current oppucancy of the [University of Mannheim](https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/) and displays it in a more user-friendly way.
 
 ## Getting Started
 
