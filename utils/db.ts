@@ -8,8 +8,7 @@ interface DataPoint {
     percentage: number;
 }
 
-async function getDataForGraph(name: string): Promise<DataPoint[]> {
-    const startOfDay = new Date();
+async function getDataForGraph(name: string, startOfDay: Date): Promise<DataPoint[]> {
     startOfDay.setHours(0, 0, 0, 0);
 
     const endOfDay = new Date();
@@ -32,7 +31,7 @@ async function getDataForGraph(name: string): Promise<DataPoint[]> {
 
     for (let hour = 0; hour < 24; hour++) {
         for (let min = 0; min < 60; min += 10) {
-            const centerTime = new Date();
+            const centerTime = new Date(startOfDay);
             centerTime.setHours(hour, min, 0, 0);
             const timeWindowStart = subMinutes(centerTime, 5);
             const timeWindowEnd = addMinutes(centerTime, 5);

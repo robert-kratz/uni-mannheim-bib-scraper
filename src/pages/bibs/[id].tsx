@@ -2,13 +2,16 @@ import { NextPageContext } from 'next';
 
 import db from '../../../utils/db';
 
-import Footer from '@/component/Footer';
+import Footer from '@/components/Footer';
 import { NextSeo } from 'next-seo';
 
 import { Chart as ChartJS, registerables } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import PercentageLabel from '@/components/PercentageLabel';
+import BackButton from '@/components/button/BackBtn';
+import { GraphBackButton, GraphNextButton } from '@/components/button/NavigationBtn';
 ChartJS.register(...registerables);
 
 type Props = {
@@ -20,14 +23,29 @@ type Props = {
             percentage: number;
         }[];
     };
+    day: string;
 };
 
-export default function Bib({ error, data }: Props) {
+const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+};
+
+export default function Bib({ error, data, day }: Props) {
     if (error) {
         return <div>{error}</div>;
     }
 
     const router = useRouter();
+
+    const { id } = router.query;
+
+    const [selectedDate, setSelectedDate] = useState(new Date(day));
+    const [currentDay, setCurrentDay] = useState(formatDate(new Date(day)));
 
     const getCurrentPercentage = (name: string) => {
         let copy = structuredClone(data);
@@ -36,6 +54,41 @@ export default function Bib({ error, data }: Props) {
         const lastEntry = copy?.data.reverse().find((entry) => entry.percentage !== 0);
 
         return lastEntry?.percentage;
+    };
+
+    const currentPercentage = getCurrentPercentage(data?.name || '') || '0';
+
+    /**
+     * Go to the next day
+     */
+    const nextDay = () => {
+        //check if next day is in the future
+        const next = new Date(selectedDate);
+        next.setDate(next.getDate() + 1);
+
+        if (next > new Date()) {
+            return;
+        }
+
+        setSelectedDate(next);
+        setCurrentDay(formatDate(next));
+        if (formatDate(next) === formatDate(new Date())) {
+            router.push(`/bibs/${id}`);
+        } else {
+            router.push(`/bibs/${id}?day=${next.toISOString()}`);
+        }
+    };
+
+    /**
+     * Go to the previous day
+     */
+    const prevDay = () => {
+        const prev = new Date(selectedDate);
+        prev.setDate(prev.getDate() - 1);
+        setSelectedDate(prev);
+        setCurrentDay(formatDate(prev));
+
+        router.push(`/bibs/${id}?day=${prev.toISOString()}`);
     };
 
     const canvasData = {
@@ -66,7 +119,7 @@ export default function Bib({ error, data }: Props) {
             },
             y: {
                 grid: {
-                    display: false,
+                    display: true,
                 },
                 border: {
                     display: true,
@@ -101,7 +154,7 @@ export default function Bib({ error, data }: Props) {
     }, []);
 
     return (
-        <main className="min-h-screen w-screen flex justify-center py-4 md:p-4">
+        <main className="min-h-screen w-screen flex justify-center px-2 py-4 md:p-4">
             <NextSeo
                 title={data?.name + ' Occupancy'}
                 description="Check the occupancy of the University of Mannheim library by Robert Julian Kratz"
@@ -111,13 +164,25 @@ export default function Bib({ error, data }: Props) {
                 }}
             />
             <div className="max-w-5xl w-full">
-                <h1 className="text-4xl font-bold text-center">{data?.name} Occupancy</h1>
+                <div className="flex justify-between items-center px-4">
+                    <div className="flex justify-start items-center space-x-4">
+                        <BackButton onClick={() => router.push('/')} disabled={false} />
+                        <h1 className="text-xl font-semibold text-left">{data?.name}</h1>
+                    </div>
+                    <div className="w-10 h-10">
+                        <PercentageLabel percentage={Number(currentPercentage)} />
+                    </div>
+                </div>
                 <div className="h-[50vh] p-4">
                     <Line id="home" options={options} data={canvasData} />
                 </div>
-                <p className="text-center text-md">
-                    Current occupancy: {getCurrentPercentage(data?.name || '') || '0'}%
-                </p>
+                <div className="flex justify-evenly items-center">
+                    <GraphBackButton onClick={prevDay} disabled={false} />
+                    <div>
+                        <p className="text-center text-md font-light">{currentDay}</p>
+                    </div>
+                    <GraphNextButton onClick={nextDay} disabled={currentDay === formatDate(new Date())} />
+                </div>
                 <Footer />
             </div>
         </main>
@@ -154,7 +219,19 @@ export async function getServerSideProps(context: NextPageContext) {
             };
         }
 
-        const data = await db.getDataForGraph(bibName);
+        const { day } = context.query;
+
+        let selectedDate: Date = new Date();
+
+        try {
+            if (day) {
+                selectedDate = new Date(day as string);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+        const data = await db.getDataForGraph(bibName, selectedDate);
 
         return {
             props: {
@@ -162,6 +239,7 @@ export async function getServerSideProps(context: NextPageContext) {
                     name: bibName,
                     data,
                 },
+                day: selectedDate.toISOString(),
             },
         };
     } catch (error) {
