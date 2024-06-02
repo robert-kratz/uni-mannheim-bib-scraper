@@ -1,3 +1,4 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Docker Image CI](https://github.com/robert-kratz/uni-mannheim-bib-scraper/actions/workflows/docker-image.yml/badge.svg)](https://github.com/robert-kratz/uni-mannheim-bib-scraper/actions/workflows/docker-image.yml)
 
 This is a [Next.js](https://nextjs.org/) application which scrapes the current oppucancy of the [University of Mannheim](https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/) and displays it in a more user-friendly way.
