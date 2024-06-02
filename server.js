@@ -28,6 +28,8 @@ app.prepare().then(async () => {
         try {
             await scrape();
 
+            const end = Date.now();
+
             console.log(`Data fetched and saved in ${end - start}ms`);
         } catch (error) {
             console.error('Failed to fetch or parse HTML:', error);
