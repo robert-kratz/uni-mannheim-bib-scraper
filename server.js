@@ -16,10 +16,12 @@ const prisma = new PrismaClient(); // Create an instance of PrismaClient
 app.prepare().then(() => {
     const server = express();
 
-    console.log('Running a task every 5 minutes');
+    console.log('Running a task every 10 minutes');
 
     // Schedule your tasks every 5 minutes
     cron.schedule('0,10,20,30,40,50 * * * *', async () => {
+        const start = Date.now();
+
         console.log('Fetching and saving data from the website');
         try {
             const data = await scraper(url);
@@ -36,6 +38,10 @@ app.prepare().then(() => {
                     },
                 });
             }
+
+            const end = Date.now();
+
+            console.log(`Data fetched and saved in ${end - start}ms`);
         } catch (error) {
             console.error('Failed to fetch or parse HTML:', error);
         }
