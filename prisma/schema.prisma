@@ -1,0 +1,16 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+model DataEntry {
+  id         Int      @id @default(autoincrement())
+  percentage Int
+  name       String
+  date       DateTime
+}
