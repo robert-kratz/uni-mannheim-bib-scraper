@@ -193,10 +193,10 @@ export default function Home({ bibs, day }: Props) {
     return (
         <main className="min-h-screen w-screen flex justify-center px-2 py-4 md:p-4">
             <NextSeo
-                title="Uni Mannheim Bib Occupancy by Robert Julian Kratz"
+                title="Uni-Mannheim Library Occupancy Statistics"
                 description="Check the occupancy of the University of Mannheim library."
                 openGraph={{
-                    title: 'Uni Mannheim Bib Occupancy',
+                    title: 'Uni-Mannheim Library Occupancy Statistics',
                     description: 'Check the occupancy of the University of Mannheim library.',
                 }}
             />

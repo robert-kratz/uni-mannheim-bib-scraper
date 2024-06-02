@@ -5,7 +5,7 @@ export default function Footer() {
         <footer className="flex flex-col md:flex-row justify-between items-center p-4">
             <div className="p-4 md:p-0">
                 <Link className="text-center text-xs" target="_blank" href="https://rjks.us/">
-                    Made by Robert Julian Kratz
+                    {new Date().getFullYear()} &copy; Made by Robert Julian Kratz
                 </Link>
             </div>
             <div className="flex justify-end items-center space-x-4">

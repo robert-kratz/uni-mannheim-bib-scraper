@@ -13,7 +13,7 @@ export default function BackButton({ onClick, disabled }: BackButtonProps) {
     return (
         <div
             onClick={buttonClicked}
-            className="cursor-pointer flex justify-center items-center bg-gray-100 hover:bg-gray-200 transition border border-gray-300 rounded-md p-2.5">
+            className="cursor-pointer flex justify-center items-center bg-gray-100 hover:bg-gray-200 transition border border-gray-300 rounded-md p-2">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"

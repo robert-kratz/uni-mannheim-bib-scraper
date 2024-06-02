@@ -30,7 +30,7 @@ app.prepare().then(async () => {
 
             const end = Date.now();
 
-            console.log(`Data fetched and saved in ${end - start}ms`);
+            console.log(`Data fetched and saved in ${end - start}ms for ${new Date().toISOString()}`);
         } catch (error) {
             console.error('Failed to fetch or parse HTML:', error);
         }
