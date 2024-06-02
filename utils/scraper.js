@@ -27,8 +27,13 @@ async function fetchAndParseHTML(url) {
                 if (percentageText.includes('%')) {
                     percentage = parseInt(percentageText.replace('%', ''), 10);
                 }
+                const date = new Date();
+
+                //date is two hours behind
+                date.setHours(date.getHours() + 2);
+
                 return {
-                    time: new Date().toISOString(),
+                    time: date.toISOString(),
                     percentage,
                     name,
                 };
