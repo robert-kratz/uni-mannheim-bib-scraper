@@ -13,8 +13,10 @@ const url = 'https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/';
 
 const prisma = new PrismaClient(); // Create an instance of PrismaClient
 
-app.prepare().then(() => {
+app.prepare().then(async () => {
     const server = express();
+
+    await scrape();
 
     console.log('Running a task every 10 minutes');
 
@@ -24,22 +26,7 @@ app.prepare().then(() => {
 
         console.log('Fetching and saving data from the website');
         try {
-            const data = await scraper(url);
-
-            for (let i = 0; i < data.length; i++) {
-                const element = data[i];
-
-                await prisma.dataEntry.create({
-                    // Make sure to use the correct model name
-                    data: {
-                        date: element.time,
-                        name: element.name,
-                        percentage: element.percentage,
-                    },
-                });
-            }
-
-            const end = Date.now();
+            await scrape();
 
             console.log(`Data fetched and saved in ${end - start}ms`);
         } catch (error) {
@@ -56,3 +43,23 @@ app.prepare().then(() => {
         console.log('> Ready on http://localhost:3000');
     });
 });
+
+/**
+ * Scrape the website and save the data to the database
+ */
+async function scrape() {
+    const data = await scraper(url);
+
+    for (let i = 0; i < data.length; i++) {
+        const element = data[i];
+
+        await prisma.dataEntry.create({
+            // Make sure to use the correct model name
+            data: {
+                date: element.time,
+                name: element.name,
+                percentage: element.percentage,
+            },
+        });
+    }
+}
