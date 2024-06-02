@@ -1,1 +1,31 @@
-# uni-mannheim-bib-scraper
+This is a [Next.js](https://nextjs.org/) application which scrapes the current oppucancy of the [University of Toronto Libraries](https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/) and displays it in a more user-friendly way.
+
+## Getting Started
+
+Install the dependencies:
+
+```bash
+npm install
+```
+
+Build the project:
+
+```bash
+npm run build
+```
+
+Run the project:
+
+```bash
+npm run start
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+This Project was build over a span of 3 hours from scratch by [Robert Julian Kratz](https://rjks.us)
