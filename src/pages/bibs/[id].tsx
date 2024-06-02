@@ -30,8 +30,10 @@ export default function Bib({ error, data }: Props) {
     const router = useRouter();
 
     const getCurrentPercentage = (name: string) => {
+        let copy = structuredClone(data);
+
         //get last percentage which is not null
-        const lastEntry = data?.data.reverse().find((entry) => entry.percentage !== 0);
+        const lastEntry = copy?.data.reverse().find((entry) => entry.percentage !== 0);
 
         return lastEntry?.percentage;
     };

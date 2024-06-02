@@ -32,8 +32,10 @@ export default function Home({ bibs }: Props) {
     const colors = ['blue', 'red', 'green', 'purple', 'orange', 'yellow'];
 
     const getCurrentPercentage = (name: string) => {
+        let copy = structuredClone(bibs);
+
         //get last percentage which is not null
-        const bibExists = bibs.find((bib) => bib.name === name);
+        const bibExists = copy.find((bib) => bib.name === name);
 
         if (!bibExists) {
             return 0;
