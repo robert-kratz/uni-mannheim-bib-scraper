@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+    app:
+        build: .
+        volumes:
+            - ./prisma/dev.db:/app/prisma/dev.db
+        ports:
+            - '4000:3000'
