@@ -1,0 +1,40 @@
+{
+    "name": "app",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "node server.js",
+        "build": "next build",
+        "start": "NODE_ENV=production node server.js"
+    },
+    "dependencies": {
+        "@mui/styled-engine-sc": "^6.0.0-alpha.18",
+        "@prisma/client": "^5.14.0",
+        "axios": "^1.7.2",
+        "chart.js": "^4.4.3",
+        "cheerio": "^1.0.0-rc.12",
+        "date-fns": "^3.6.0",
+        "express": "^4.19.2",
+        "next": "14.2.3",
+        "next-seo": "^6.5.0",
+        "node-cron": "^3.0.3",
+        "prisma": "^5.14.0",
+        "puppeteer": "^22.10.0",
+        "react": "^18",
+        "react-chartjs-2": "^5.2.0",
+        "react-dom": "^18",
+        "sqlite3": "^5.1.7",
+        "styled-components": "^6.1.11",
+        "winston": "^3.13.0",
+        "winston-daily-rotate-file": "^5.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "@types/node-cron": "^3.0.11",
+        "@types/react": "^18",
+        "@types/react-dom": "^18",
+        "postcss": "^8",
+        "tailwindcss": "^3.4.1",
+        "typescript": "^5"
+    }
+}
