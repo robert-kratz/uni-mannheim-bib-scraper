@@ -130,7 +130,7 @@ export default function Home({ bibs, day }: Props) {
         datasets: bibs?.map((bib, index) => ({
             label: bib?.name || 'Unknown',
             borderColor: colors[index],
-            pointRadius: 0,
+            pointRadius: 2,
             fill: false,
             lineTension: 0.1,
             data: bib?.data?.map((entry) => entry.percentage),

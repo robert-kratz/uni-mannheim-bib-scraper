@@ -29,7 +29,7 @@ async function getDataForGraph(name: string, startOfDay: Date): Promise<DataPoin
 
     const result: DataPoint[] = [];
 
-    for (let hour = 0; hour < 24; hour++) {
+    for (let hour = 8; hour < 24; hour++) {
         for (let min = 0; min < 60; min += 10) {
             const centerTime = new Date(startOfDay);
             centerTime.setHours(hour, min, 0, 0);
