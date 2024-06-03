@@ -126,6 +126,27 @@ export default function Home({ bibs, day }: Props) {
         }
     };
 
+    let graphData = (bib: any) => {
+        //use the percentage until the current time, after that leave empty so the line stops
+        let copy = structuredClone(bib);
+        let currentData = copy.data.reverse();
+
+        let result = [],
+            endReached = false;
+
+        for (let i = 0; i < currentData.length; i++) {
+            const element = currentData[i];
+
+            if (element.percentage === 0 && !endReached) continue;
+
+            endReached = true;
+
+            result.push(element.percentage);
+        }
+
+        return result.reverse();
+    };
+
     const canvasData = {
         datasets: bibs?.map((bib, index) => ({
             label: bib?.name || 'Unknown',
@@ -133,7 +154,9 @@ export default function Home({ bibs, day }: Props) {
             pointRadius: 2,
             fill: false,
             lineTension: 0.1,
-            data: bib?.data?.map((entry) => entry.percentage),
+            // data: bib?.data?.filter((entry) => entry.percentage !== 0).map((entry) => entry.percentage),
+            data: graphData(bib),
+            // data: bib?.data?.map((entry) => entry.percentage),
             borderWidth: 2,
         })),
     };

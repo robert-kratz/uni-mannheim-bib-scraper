@@ -44,6 +44,8 @@ export default function Bib({ error, data, day }: Props) {
 
     const { id } = router.query;
 
+    const colors = ['blue', 'red', 'green', 'purple', 'orange', 'yellow'];
+
     const [selectedDate, setSelectedDate] = useState(new Date(day));
     const [currentDay, setCurrentDay] = useState(formatDate(new Date(day)));
 
@@ -91,15 +93,36 @@ export default function Bib({ error, data, day }: Props) {
         router.push(`/bibs/${id}?day=${prev.toISOString()}`);
     };
 
+    let graphData = (bib: any) => {
+        //use the percentage until the current time, after that leave empty so the line stops
+        let copy = structuredClone(bib);
+        let currentData = copy.data.reverse();
+
+        let result = [],
+            endReached = false;
+
+        for (let i = 0; i < currentData.length; i++) {
+            const element = currentData[i];
+
+            if (element.percentage === 0 && !endReached) continue;
+
+            endReached = true;
+
+            result.push(element.percentage);
+        }
+
+        return result.reverse();
+    };
+
     const canvasData = {
         datasets: [
             {
                 label: data?.name,
-                borderColor: 'navy',
-                pointRadius: 0,
+                borderColor: colors[Number(id) || 0],
+                pointRadius: 2,
                 fill: false,
                 lineTension: 0.1,
-                data: data?.data?.map((entry) => entry.percentage),
+                data: graphData(data),
                 borderWidth: 2,
             },
         ],
