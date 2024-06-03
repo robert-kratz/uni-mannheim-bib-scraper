@@ -181,7 +181,7 @@ export default function Home({ bibs, day }: Props) {
                     display: true,
                 },
                 min: 0,
-                max: 100,
+                max: 105,
                 ticks: {
                     stepSize: 5,
                     color: 'black',
