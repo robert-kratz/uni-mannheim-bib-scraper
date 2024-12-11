@@ -8,8 +8,10 @@ This is a [Next.js](https://nextjs.org/) application which scrapes the current o
 Install the dependencies:
 
 ```bash
-npm install
+npm install && npx prisma generate # Prisma Only needed for development
 ```
+
+**View Database with: `npx prisma studio`**
 
 Build the project:
 
