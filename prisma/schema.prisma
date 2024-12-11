@@ -8,9 +8,13 @@ generator client {
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
-model DataEntry {
+model BibData {
   id         Int      @id @default(autoincrement())
   percentage Int
   name       String
-  date       DateTime
+  year       Int
+  month      Int
+  day        Int
+  chunk      Int
+  iat        DateTime
 }
