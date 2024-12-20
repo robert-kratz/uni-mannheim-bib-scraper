@@ -1,0 +1,2 @@
+Timestamp,Data Size (rows),Memory Peak Usage (MB),Training Duration (m),Validation Loss,Validation MAE (%),Test MAE (%)
+2024-12-20 @ 21:52:53,137566,237.45,3.72,0.022,7.97,5.16

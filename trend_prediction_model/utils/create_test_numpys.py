@@ -1,7 +1,7 @@
 """
 This script is only to be run once to preprocess the test data for the model.
 The outputs are saved on-disk as NumPy arrays for easy loading in the model.
-The '.npy' on-disk files can be found under './trend_prediction_model'.
+The '.npy' on-disk files can be found under './trend_prediction_model/utils'.
 """
 
 import sqlite3

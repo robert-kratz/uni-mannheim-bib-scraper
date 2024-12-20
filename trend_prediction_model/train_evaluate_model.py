@@ -7,10 +7,10 @@
 # 2. data of one library + data of all libraries as inputs => better prediction for one library that accounts for inter-dependencies, BUT extremely computationally expensive (more inputs and more models) => overhead, not worth implementing 
 # 
 # ### - [DONE] Tweak model to improve its accuracy
-# ### - [IN-PROGRESS] Create pipeline for receiving data in real-time, once a day, and update the model after training
+# ### - [DONE] Create pipeline for receiving data in real-time, once a day, and update the model after training
 # ### - 'Integrate' model into the website
 # 
-# ### Additional idea: if we deploy this and have a TPU at disposal: crank the learning rate up to 0.01, put 20 epochs, add the callbacks and maybe adjust batch size; also, maybe adjust 'past' parameter;
+# ### Adjust 'past' parameter eventually in the coming releases
 
 # %% [markdown]
 # ### Imports
@@ -179,7 +179,7 @@ def build_multi_input_model(sequence_length, num_libraries, future_steps):
     output = Dense(future_steps, name="output")(x)
 
     model = Model(inputs=[seq_input, lib_input], outputs=output)
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.005), loss="mse", metrics=["mae"])
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss="mse", metrics=["mae"])
     return model
 
 
@@ -200,10 +200,10 @@ except:
 # %%
 # COMMENT IF RUNNING ON ONLY A COUPLE OF EPOCHS - defining callbacks
 
-early_stopping = EarlyStopping(monitor='val_loss', patience=4, restore_best_weights=True)
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
 learning_rate_reduction = ReduceLROnPlateau(
-    monitor='val_loss', factor=0.1, patience=2, min_lr=1e-5
+    monitor='val_loss', factor=0.2, patience=2, min_lr=1e-5
 )
 
 # %% [markdown]
@@ -217,7 +217,7 @@ history = model.fit(
     [train_sequences, train_library_inputs],
     train_targets,
     validation_data=([val_sequences, val_library_inputs], val_targets),
-    epochs = 5,
+    epochs = 100,
     batch_size = 32,
     callbacks=[early_stopping, learning_rate_reduction]
 )
