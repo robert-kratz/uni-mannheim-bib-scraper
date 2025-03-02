@@ -27,6 +27,8 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 
 import tensorflow as tf
+import tensorflowjs as tfjs
+
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, GRU, Dense, Concatenate, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
@@ -230,6 +232,7 @@ training_end_time = time.time()
 # %%
 # Save the trained model
 model.save(model_save_path)
+tfjs.converters.save_keras_model(model, "./trend_prediction_model/tfjs_model")
 print(f"Model updated to {model_save_path}.")
 
 # %% [markdown]
