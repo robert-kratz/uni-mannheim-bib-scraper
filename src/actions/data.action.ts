@@ -4,6 +4,8 @@ import prisma from '@/utils/db';
 import logger from '@/utils/logger';
 import { BibData } from '@prisma/client';
 
+import { FetchDayData, Scaling, DataPoint } from '@/types/types';
+
 const CHUNK_START = 48,
     CHUNK_END = 139;
 
@@ -47,7 +49,7 @@ export async function fetchDataForDay(date: Date): Promise<FetchDayData | null> 
         });
 
         // Initialize a dataMap with 144 entries for each 10-minute interval
-        const dataMap = new Map<string, Data>();
+        const dataMap = new Map<string, DataPoint>();
         for (let i = 0; i < 144; i++) {
             const label = `${String(Math.floor(i / 6)).padStart(2, '0')}:${String((i % 6) * 10).padStart(2, '0')}`;
             dataMap.set(label, { label });
@@ -69,7 +71,7 @@ export async function fetchDataForDay(date: Date): Promise<FetchDayData | null> 
         });
 
         // Convert the dataMap to an array and filter out labels with no data points
-        const groupedData: Data[] = Array.from(dataMap.values()).map((entry) => {
+        const groupedData: DataPoint[] = Array.from(dataMap.values()).map((entry) => {
             const hasData = Object.keys(entry).some((key) => key !== 'label');
             return hasData ? entry : { label: entry.label };
         });
@@ -166,7 +168,7 @@ async function fetchDataForSingleDayWithScaling(date: Date, scaling: Scaling[]):
     });
 
     // Initialize a dataMap with entries for each 10-minute interval
-    const dataMap = new Map<string, Data>();
+    const dataMap = new Map<string, DataPoint>();
     for (let i = 0; i < 144; i++) {
         const label = `${String(Math.floor(i / 6)).padStart(2, '0')}:${String((i % 6) * 10).padStart(2, '0')}`;
         dataMap.set(label, { label });
@@ -189,7 +191,7 @@ async function fetchDataForSingleDayWithScaling(date: Date, scaling: Scaling[]):
     });
 
     // Convert the dataMap to an array
-    const groupedData: Data[] = Array.from(dataMap.values());
+    const groupedData: DataPoint[] = Array.from(dataMap.values());
 
     // Return the FetchDayData object
     return {
@@ -200,7 +202,7 @@ async function fetchDataForSingleDayWithScaling(date: Date, scaling: Scaling[]):
 
 function computeAverageDataWithScaling(dataSets: FetchDayData[], scaling: Scaling[]): FetchDayData {
     // Initialize a dataMap with entries for each time label
-    const dataMap = new Map<string, Data>();
+    const dataMap = new Map<string, DataPoint>();
 
     for (let i = CHUNK_START; i < CHUNK_END; i++) {
         const label = `${String(Math.floor(i / 6)).padStart(2, '0')}:${String((i % 6) * 10).padStart(2, '0')}`;

@@ -27,4 +27,5 @@ export interface HomePageProps {
     avgData: FetchDayData;
     availableEntities: string[];
     currentDate: string;
+    prediction: number;
 }

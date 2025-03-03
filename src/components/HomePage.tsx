@@ -14,7 +14,7 @@ import { FetchDayData, GraphScaling, HomePageProps } from '@/types/types';
 
 const classNames = (...classes: string[]) => classes.filter(Boolean).join(' ');
 
-const HomePage: React.FC<HomePageProps> = ({ data, avgData, availableEntities, currentDate }) => {
+const HomePage: React.FC<HomePageProps> = ({ data, avgData, availableEntities, currentDate, prediction }) => {
     const deviceWidth = useDeviceWidth();
     const [graphScaling, setGraphScaling] = useState<GraphScaling>(GraphScaling.TenMinutes);
     const [selectedGraph, setSelectedGraph] = useState<number[]>([]);
@@ -68,6 +68,314 @@ const HomePage: React.FC<HomePageProps> = ({ data, avgData, availableEntities, c
                     {/* Graph Scaling Buttons */}
                     <div className="flex space-x-4 p-4">
                         {/* <button
+className={`${
+graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+} text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.TenMinutes)}>
+                            M
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.Hourly ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.Hourly)}>
+                            H
+                        </button> */}
+                        {/* <button
+                            className={`${
+                                graphScaling === GraphScaling.LastThreeHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastThreeHours)}>
+                            3h
+                        </button>
+                        <button
+                            className={`${
+                                graphScaling === GraphScaling.LastSixHours ? 'bg-blue-500' : 'bg-blue-400'
+                            } text-white px-4 py-2 rounded`}
+                            onClick={() => setGraphScaling(GraphScaling.LastSixHours)}>
+                            6h
+                        </button> */}
+                        {/* <button
                             className={`${
                                 graphScaling === GraphScaling.TenMinutes ? 'bg-blue-500' : 'bg-blue-400'
                             } text-white px-4 py-2 rounded`}
@@ -115,6 +423,21 @@ const HomePage: React.FC<HomePageProps> = ({ data, avgData, availableEntities, c
                         withDots={false}
                         withYAxis
                         curveType="bump"
+                        yAxisProps={{ domain: [0, 100] }}
+                        valueFormatter={(value) => `${value}%`}
+                    />
+                </div>
+
+                {/* Prediction Chart */}
+                <div className={classNames(deviceWidth > 768 ? 'w-full' : 'w-screen', 'pr-4')}>
+                    <LineChart
+                        h={deviceWidth > 768 ? 400 : 300}
+                        data={[{ label: 'Prediction', value: prediction }]}
+                        series={[{ name: 'Prediction' }]}
+                        dataKey="label"
+                        withDots={true}
+                        withYAxis
+                        curveType="linear"
                         yAxisProps={{ domain: [0, 100] }}
                         valueFormatter={(value) => `${value}%`}
                     />
