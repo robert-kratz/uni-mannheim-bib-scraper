@@ -18,3 +18,14 @@ model BibData {
   chunk      Int
   iat        DateTime
 }
+
+model BibPredictionData {
+  id         Int      @id @default(autoincrement())
+  percentage Int
+  name       String
+  year       Int
+  month      Int
+  day        Int
+  chunk      Int
+  iat        DateTime
+}

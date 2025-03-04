@@ -6,7 +6,6 @@ import '@mantine/core/styles.css';
 import * as tf from '@tensorflow/tfjs';
 
 import { fetchDataForDay, getAverageData, getAviableEntities } from '@/actions/data.action';
-import { loadModel, predict } from '@/actions/model.action';
 import HomePage from '@/components/HomePage';
 
 // Predefined one-hot encodings for libraries
@@ -48,31 +47,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         return <div>Error fetching data for last week</div>;
     }
 
-    const inputData = dataLastWeek.data.flatMap((item) =>
-        Object.values(item).filter((value) => typeof value === 'number')
-    );
-
-    // Convert library names to their one-hot encoded vectors
-    //EDIT
-    const inputLibrary = data.data.flatMap((item) => libraryEncodings[item.library]);
-
-    //for every distinct library, add a one-hot encoded vector
-    // const inputLibrary = data.data.flatMap((item) => {
-    //     const library = item.library;
-    //     return Object.keys(libraryEncodings).map((key) => (key === library ? 1 : 0));
-    // });
-
-    // Load the model
-    const model = await loadModel();
-    const prediction = await predict(model, inputData, inputLibrary);
-
     return (
         <HomePage
             data={data}
             availableEntities={aviailableEntities}
             currentDate={target}
             avgData={avgData}
-            prediction={prediction}
+            //prediction={prediction}
         />
     );
 }

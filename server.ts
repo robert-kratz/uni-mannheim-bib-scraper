@@ -4,6 +4,7 @@ import next from 'next';
 import cron from 'node-cron';
 import { PrismaClient } from '@prisma/client';
 import { fetchAndParseHTML } from './src/utils/scraper';
+import { loadModel, predict } from './tensorflow/model';
 
 const port = parseInt(process.env.PORT || '3000', 10);
 const dev = process.env.NODE_ENV !== 'production';
@@ -25,7 +26,52 @@ app.prepare().then(() => {
 
     // Schedule the scraper task
     scheduleScraperTask();
+    schedulePredictionTask();
+
+    /**
+     * // Load the model
+    const model = await loadModel();
+
+    const prediction = await predict(model, inputData, inputLibrary);
+     */
 });
+
+const schedulePredictionTask = () => {
+    console.log('Running a prediction task every 24 hours');
+
+    cron.schedule('0 0 * * *', async () => {
+        const start = Date.now();
+
+        console.info('Running prediction task');
+        try {
+            //const dataLastWeek = await fetchDataForDay(lastWeek);
+
+            //const inputData = dataLastWeek.data.flatMap((item) =>
+            //    Object.values(item).filter((value) => typeof value === 'number')
+            //);
+
+            // Convert library names to their one-hot encoded vectors
+            //EDIT
+            //const inputLibrary = data.data.flatMap((item) => libraryEncodings[item.library]);
+
+            //for every distinct library, add a one-hot encoded vector
+            // const inputLibrary = data.data.flatMap((item) => {
+            //     const library = item.library;
+            //     return Object.keys(libraryEncodings).map((key) => (key === library ? 1 : 0));
+            // });
+
+            // Load the model
+            //const model = await loadModel();
+
+            //const prediction = await predict(model, inputData, inputLibrary);
+
+            const end = Date.now();
+            console.info(`Prediction task completed in ${end - start}ms for ${new Date().toISOString()}`);
+        } catch (error) {
+            console.error('Failed to run prediction task:', error);
+        }
+    });
+};
 
 /**
  * Schedules the scraper task to run every 10 minutes
