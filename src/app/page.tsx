@@ -6,8 +6,17 @@ import '@mantine/core/styles.css';
 import * as tf from '@tensorflow/tfjs';
 
 import { fetchDataForDay, getAverageData, getAviableEntities } from '@/actions/data.action';
-import { predict } from '@/actions/model.action';
+import { loadModel, predict } from '@/actions/model.action';
 import HomePage from '@/components/HomePage';
+
+// Predefined one-hot encodings for libraries
+const libraryEncodings: { [key: string]: number[] } = {
+    'Ausleihzentrum Schloss Westflügel': [1, 0, 0, 0, 0],
+    'Bibliotheks­bereich A3': [0, 1, 0, 0, 0],
+    'Bibliotheks­bereich A5': [0, 0, 1, 0, 0],
+    'Bibliotheks­bereich Schloss Ehrenhof': [0, 0, 0, 1, 0],
+    'Bibliotheks­bereich Schloss Schneckenhof': [0, 0, 0, 0, 1],
+};
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
     let params = await searchParams;
@@ -42,7 +51,20 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
     const inputData = dataLastWeek.data.flatMap((item) =>
         Object.values(item).filter((value) => typeof value === 'number')
     );
-    const prediction = await predict(inputData);
+
+    // Convert library names to their one-hot encoded vectors
+    //EDIT
+    const inputLibrary = data.data.flatMap((item) => libraryEncodings[item.library]);
+
+    //for every distinct library, add a one-hot encoded vector
+    // const inputLibrary = data.data.flatMap((item) => {
+    //     const library = item.library;
+    //     return Object.keys(libraryEncodings).map((key) => (key === library ? 1 : 0));
+    // });
+
+    // Load the model
+    const model = await loadModel();
+    const prediction = await predict(model, inputData, inputLibrary);
 
     return (
         <HomePage

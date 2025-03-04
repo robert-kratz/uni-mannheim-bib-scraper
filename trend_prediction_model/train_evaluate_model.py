@@ -70,6 +70,9 @@ library_names = df['name'].unique().reshape(-1, 1)
 encoder = OneHotEncoder(sparse_output=False)
 one_hot_keys = encoder.fit_transform(library_names)
 
+for one_hot, library in zip(one_hot_keys, library_names.flatten()):
+    print(f"{library} => {one_hot}")
+
 # Create the dictionary with one-hot encoded keys
 data_by_library = {
     tuple(one_hot): df[df['name'] == library].drop(columns=['name', 'year', 'month', 'day', 'chunk'])
@@ -170,9 +173,9 @@ val_targets = np.array(val_targets)
 def build_multi_input_model(sequence_length, num_libraries, future_steps):
     seq_input = Input(shape=(sequence_length, 1), name="sequence_input")
 
-    x = GRU(64, activation="tanh", return_sequences = True)(seq_input)
+    x = GRU(64, activation="tanh", return_sequences = True, reset_after = False)(seq_input)
     x = Dropout(0.4)(x)
-    x = GRU(32, activation="tanh", return_sequences = False)(x)
+    x = GRU(32, activation="tanh", return_sequences = False, reset_after = False)(x)
 
     lib_input = Input(shape=(num_libraries,), name="library_input")
     combined = Concatenate()([x, lib_input])
@@ -186,7 +189,7 @@ def build_multi_input_model(sequence_length, num_libraries, future_steps):
 
 
 # Filepath to save the model
-model_save_path = "./trend_prediction_model/base_model.keras"
+model_save_path = "./trend_prediction_model/base_model.h5"
 
 # Check if a previous model already exists
 try:
@@ -292,4 +295,4 @@ log_update(
     test_mae = round(test_mae * 100, 2)
 )
 
-
+tf.keras.backend.clear_session()
