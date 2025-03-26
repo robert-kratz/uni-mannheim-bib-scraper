@@ -1,11 +1,6 @@
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
-}
-
-generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model BibData {
@@ -28,4 +23,20 @@ model BibPredictionData {
   day        Int
   chunk      Int
   iat        DateTime
+}
+
+model CalendarEvent {
+  id    Int       @id @default(autoincrement())
+  name  String
+  type  EventType
+  start DateTime
+  end   DateTime
+}
+
+enum EventType {
+  lecture
+  exam
+  holiday
+  break
+  event
 }

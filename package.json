@@ -1,40 +1,37 @@
 {
-    "name": "uni-mannheim-bib-scraper",
-    "version": "0.1.0",
-    "private": true,
-    "scripts": {
-        "dev": "nodemon",
-        "build": "next build && tsc --project tsconfig.server.json",
-        "start": "cross-env NODE_ENV=production node dist/server.js",
-        "migrate": "npx prisma generate && npm prisma db pull && npx prisma db push && node tools/migrate.js",
-        "lint": "next lint"
-    },
-    "dependencies": {
-        "@mantine/charts": "^7.14.0",
-        "@mantine/core": "^7.14.0",
-        "@prisma/client": "^5.22.0",
-        "@tensorflow/tfjs": "^4.22.0",
-        "axios": "^1.7.8",
-        "cheerio": "^1.0.0",
-        "fs": "^0.0.1-security",
-        "next": "15.0.3",
-        "node-cron": "^3.0.3",
-        "prisma": "^5.22.0",
-        "react": "^18.3.0",
-        "react-dom": "^18.3.0",
-        "recharts": "^2.13.3",
-        "ts-node": "^10.9.2",
-        "winston": "^3.17.0",
-        "winston-daily-rotate-file": "^5.0.0"
-    },
-    "devDependencies": {
-        "@types/node": "^20",
-        "@types/node-cron": "^3.0.11",
-        "@types/react": "^18",
-        "@types/react-dom": "^18",
-        "nodemon": "^2.0.22",
-        "postcss": "^8",
-        "tailwindcss": "^3.4.1",
-        "typescript": "^5"
-    }
+  "name": "uni-mannheim-bib-scraper",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon",
+    "build": "next build && tsc --project tsconfig.server.json",
+    "start": "cross-env NODE_ENV=production node dist/server.js",
+    "migrate": "npx prisma generate && npm prisma db pull && npx prisma db push && node tools/migrate.js",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.5.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "lucide-react": "^0.483.0",
+    "next": "15.2.4",
+    "node-cron": "^3.0.3",
+    "nprogress": "^0.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.1",
+    "tailwindcss-animate": "^1.0.7",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/node-cron": "^3.0.11",
+    "@types/nprogress": "^0.2.3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
 }
