@@ -179,13 +179,13 @@ export default function OccupancyGraph({
                             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                             <XAxis
                                 dataKey="time"
-                                tickFormatter={formatXAxis}
-                                tick={{ fontSize: 12 }}
-                                tickMargin={10}
+                                tick={{ fontSize: 10 }}
+                                tickMargin={5}
                                 label={{
                                     value: '',
                                     position: 'insideBottom',
                                     offset: -10,
+                                    fontSize: 10,
                                 }}
                             />
                             <YAxis domain={[0, 100]} tickCount={6} unit="%" tick={{ fontSize: 12 }} tickMargin={10} />
