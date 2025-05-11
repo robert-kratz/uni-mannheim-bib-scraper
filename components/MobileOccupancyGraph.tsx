@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
+    ReferenceLine,
+} from 'recharts';
 import { Library, DailyOccupancyData } from '../utils/types';
 import { format, parseISO, isToday, isFuture } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -142,6 +152,14 @@ export default function MobileOccupancyGraph({
                             }}
                         />
                         <YAxis domain={[0, 100]} tickCount={5} unit="%" tick={{ fontSize: 10 }} tickMargin={5} />
+                        {/* Horizontal threshold line at 75% */}
+                        <ReferenceLine
+                            y={80}
+                            stroke="red"
+                            strokeDasharray="3 3"
+                            strokeWidth={1}
+                            label={{ value: '80%', position: 'left', fill: 'red', fontSize: 12 }}
+                        />
                         <Tooltip content={<MobileCustomTooltip />} />
                         <Legend wrapperStyle={{ fontSize: '10px', marginTop: '10px' }} iconSize={8} iconType="circle" />
 

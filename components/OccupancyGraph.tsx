@@ -2,7 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
+    ReferenceLine,
+} from 'recharts';
 import { Library, DailyOccupancyData } from '@/utils/types';
 import { format, parseISO, isToday, addDays, isFuture } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -189,6 +199,14 @@ export default function OccupancyGraph({
                                 }}
                             />
                             <YAxis domain={[0, 100]} tickCount={6} unit="%" tick={{ fontSize: 12 }} tickMargin={10} />
+                            {/* Horizontal threshold line at 75% */}
+                            <ReferenceLine
+                                y={75}
+                                stroke="red"
+                                strokeDasharray="3 3"
+                                strokeWidth={1}
+                                label={{ value: '75%', position: 'left', fill: 'red', fontSize: 12 }}
+                            />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend />
 
