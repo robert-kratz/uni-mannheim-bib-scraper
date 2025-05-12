@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
     LineChart,
     Line,
@@ -11,17 +10,18 @@ import {
     Legend,
     ReferenceLine,
 } from 'recharts';
-import { Library, DailyOccupancyData } from '../utils/types';
-import { format, parseISO, isToday, isFuture } from 'date-fns';
+import { Library, DailyOccupancyData } from '@/utils/types';
+import { format, parseISO, isToday, isFuture, addDays } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { useRouter } from 'next/navigation';
+
+const ENABLE_PREDICTION = false; // Set to true to enable prediction lines, only here until we have a prediction API
 
 interface MobileOccupancyGraphProps {
     libraries: Library[];
-    data: DailyOccupancyData[];
+    data: DailyOccupancyData;
     favorites: string[];
     showOnlyFavorites: boolean;
-    selectedDateIndex: number;
-    setSelectedDateIndex: (index: number) => void;
 }
 
 const MobileCustomTooltip = ({ active, payload, label }: any) => {
@@ -49,10 +49,10 @@ export default function MobileOccupancyGraph({
     data,
     favorites,
     showOnlyFavorites,
-    selectedDateIndex,
-    setSelectedDateIndex,
 }: MobileOccupancyGraphProps) {
-    const selectedDay = data[selectedDateIndex];
+    const selectedDay = data;
+
+    const router = useRouter();
 
     // Prepare chart data - simplified for mobile
     const chartData = selectedDay
@@ -77,6 +77,7 @@ export default function MobileOccupancyGraph({
                       if (libraryData) {
                           dataPoint[library.id] = libraryData.occupancy;
                           // We don't need predictions on mobile view for simplicity
+                          if (ENABLE_PREDICTION) dataPoint[`${library.id}-prediction`] = libraryData.prediction;
                       }
                   });
 
@@ -87,16 +88,32 @@ export default function MobileOccupancyGraph({
           })()
         : [];
 
-    const navigateDate = (direction: 'prev' | 'next') => {
-        if (direction === 'prev' && selectedDateIndex > 0) {
-            setSelectedDateIndex(selectedDateIndex - 1);
-        } else if (direction === 'next' && selectedDateIndex < data.length - 1) {
-            // Check if next date is in the future
-            const nextDate = parseISO(data[selectedDateIndex + 1].date);
-            if (!isFuture(nextDate)) {
-                setSelectedDateIndex(selectedDateIndex + 1);
-            }
+    const navigateBack = () => {
+        //go to the previous page
+        const currentDate = parseISO(data.date);
+        const newDate = addDays(currentDate, -1);
+
+        router.push(`?date=${format(newDate, 'yyyy-MM-dd')}`);
+    };
+
+    const navigateForward = () => {
+        //go to the next page
+        const currentDate = parseISO(data.date);
+        const newDate = addDays(currentDate, 1);
+
+        // Check if the new date is in the future
+        if (isFuture(newDate)) {
+            return;
         }
+
+        router.push(`?date=${format(newDate, 'yyyy-MM-dd')}`);
+    };
+
+    const canGoForward = () => {
+        // Check if the new date is in the future
+        const currentDate = parseISO(data.date);
+        const newDate = addDays(currentDate, 1);
+        return !isFuture(newDate);
     };
 
     // Format the displayed date
@@ -105,79 +122,119 @@ export default function MobileOccupancyGraph({
     // Determine which libraries to show
     const visibleLibraries = libraries.filter((lib) => !showOnlyFavorites || favorites.includes(lib.id));
 
-    return (
-        <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-3 shadow-sm mb-6 animate-fadeIn">
-            <div className="flex flex-col mb-3">
-                <h2 className="text-lg font-medium mb-2">Bibliotheksauslastung</h2>
+    const scrapeFailed = (() => {
+        if (chartData.length === 0) return false;
+        const last = chartData[chartData.length - 1];
+        return visibleLibraries.every((lib) => {
+            const val = last[lib.id as keyof typeof last] as number | null | undefined;
+            return val === null || val === -1 || val === undefined;
+        });
+    })();
 
-                <div className="flex items-center justify-center space-x-2">
+    return (
+        <>
+            {!isToday(data.date) && (
+                <div className="flex items-center justify-end mb-4 w-full">
                     <button
-                        onClick={() => navigateDate('prev')}
-                        className="p-1.5 rounded-lg bg-secondary/50 hover:bg-secondary transition-all-200"
+                        onClick={() => router.push('/')}
+                        className="text-sm px-3 py-1 rounded-full transition-all duration-200 bg-accent text-white">
+                        Zurück zur Heute
+                    </button>
+                </div>
+            )}
+            {scrapeFailed && (
+                <div className="mb-4 flex items-start space-x-2 p-3 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 text-sm">
+                    <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
+                    <p>
+                        Die aktuellsten Daten konnten nicht von der Website geladen werden. Sollte das Problem weiterhin
+                        bestehen, kontaktieren Sie bitte unser Team.
+                    </p>
+                </div>
+            )}
+            <div className="flex justify-end items-center mb-4">
+                <div className="flex items-center space-x-2">
+                    <button
+                        onClick={() => navigateBack()}
+                        className="p-1.5 rounded-lg bg-secondary/50 hover:bg-secondary transition-all duration-200"
                         aria-label="Previous day">
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className="w-5 h-5" />
                     </button>
 
-                    <span className="text-xs font-medium px-2 text-center">{formattedDate}</span>
+                    <span className="text-sm font-medium px-2">{formattedDate}</span>
 
                     <button
-                        onClick={() => navigateDate('next')}
-                        className={`p-1.5 rounded-lg transition-all-200 ${
-                            selectedDateIndex < data.length - 1 && !isFuture(parseISO(data[selectedDateIndex + 1].date))
+                        onClick={() => navigateForward()}
+                        className={`p-1.5 rounded-lg transition-all duration-200 ${
+                            canGoForward()
                                 ? 'bg-secondary/50 hover:bg-secondary'
                                 : 'bg-secondary/20 text-muted-foreground cursor-not-allowed'
                         }`}
-                        disabled={
-                            selectedDateIndex >= data.length - 1 || isFuture(parseISO(data[selectedDateIndex + 1].date))
-                        }
                         aria-label="Next day">
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-5 h-5" />
                     </button>
                 </div>
             </div>
+            <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-3 shadow-sm mb-6 animate-fadeIn">
+                <div className="flex sm:items-center sm:justify-between flex-col sm:flex-row mb-4 gap-2">
+                    <h2 className="text-xl font-medium">Bibliotheksauslastung</h2>
+                </div>
 
-            <div className="h-[20rem] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 5, right: 5, left: -15, bottom: 15 }}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                        <XAxis
-                            dataKey="time"
-                            tick={{ fontSize: 10 }}
-                            tickMargin={5}
-                            label={{
-                                value: '',
-                                position: 'insideBottom',
-                                offset: -10,
-                                fontSize: 10,
-                            }}
-                        />
-                        <YAxis domain={[0, 100]} tickCount={5} unit="%" tick={{ fontSize: 10 }} tickMargin={5} />
-                        {/* Horizontal threshold line at 75% */}
-                        <ReferenceLine
-                            y={80}
-                            stroke="red"
-                            strokeDasharray="3 3"
-                            strokeWidth={1}
-                            label={{ value: '80%', position: 'left', fill: 'red', fontSize: 12 }}
-                        />
-                        <Tooltip content={<MobileCustomTooltip />} />
-                        <Legend wrapperStyle={{ fontSize: '10px', marginTop: '10px' }} iconSize={8} iconType="circle" />
-
-                        {visibleLibraries.map((library) => (
-                            <Line
-                                key={library.id}
-                                type="monotone"
-                                dataKey={library.id}
-                                name={library.name}
-                                stroke={library.color}
-                                strokeWidth={2}
-                                dot={false}
-                                activeDot={{ r: 4 }}
+                <div className="h-[20rem] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData} margin={{ top: 5, right: 5, left: -15, bottom: 15 }}>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                            <XAxis
+                                dataKey="time"
+                                tick={{ fontSize: 10 }}
+                                tickMargin={5}
+                                label={{
+                                    value: '',
+                                    position: 'insideBottom',
+                                    offset: -10,
+                                    fontSize: 10,
+                                }}
                             />
-                        ))}
-                    </LineChart>
-                </ResponsiveContainer>
+                            <YAxis domain={[0, 100]} tickCount={5} unit="%" tick={{ fontSize: 10 }} tickMargin={5} />
+                            {/* Horizontal threshold line at 75% */}
+                            <ReferenceLine y={75} stroke="red" strokeDasharray="3 3" strokeWidth={1} />
+                            <Tooltip content={<MobileCustomTooltip />} />
+                            <Legend
+                                wrapperStyle={{ fontSize: '10px', marginTop: '10px' }}
+                                iconSize={8}
+                                iconType="circle"
+                            />
+
+                            {visibleLibraries.map((library) => (
+                                <Line
+                                    key={library.id}
+                                    type="monotone"
+                                    dataKey={library.id}
+                                    name={library.name}
+                                    stroke={library.color}
+                                    strokeWidth={2}
+                                    dot={false}
+                                    activeDot={{ r: 4 }}
+                                />
+                            ))}
+
+                            {ENABLE_PREDICTION &&
+                                visibleLibraries.map((library) => (
+                                    <Line
+                                        key={`${library.id}-prediction`}
+                                        type="monotone"
+                                        dataKey={`${library.id}-prediction`}
+                                        name={`${library.name} (Prognose)`}
+                                        stroke={library.color}
+                                        strokeWidth={1.5}
+                                        strokeDasharray="5 5"
+                                        dot={false}
+                                        activeDot={{ r: 4 }}
+                                    />
+                                ))}
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
-        </div>
+        </>
     );
 }

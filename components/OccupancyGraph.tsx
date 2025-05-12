@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
     LineChart,
     Line,
@@ -19,13 +19,13 @@ import { de } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useRouter } from 'next/navigation';
 
+const ENABLE_PREDICTION = false; // Set to true to enable prediction lines, only here until we have a prediction API
+
 interface OccupancyGraphProps {
     libraries: Library[];
-    data: DailyOccupancyData[];
+    data: DailyOccupancyData;
     favorites: string[];
     showOnlyFavorites: boolean;
-    selectedDateIndex?: number;
-    setSelectedDateIndex?: (index: number) => void;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -48,50 +48,16 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
-export default function OccupancyGraph({
-    libraries,
-    data,
-    favorites,
-    showOnlyFavorites,
-    selectedDateIndex: propSelectedDateIndex,
-    setSelectedDateIndex: propSetSelectedDateIndex,
-}: OccupancyGraphProps) {
-    console.log('OccupancyGraph rendered');
-    console.log('Libraries:', libraries);
-    console.log('Data:', data);
-
+export default function OccupancyGraph({ libraries, data, favorites, showOnlyFavorites }: OccupancyGraphProps) {
     const router = useRouter();
-
-    const [localSelectedDateIndex, setLocalSelectedDateIndex] = useState<number>(() => {
-        // Find today's index in the data array
-        return data.findIndex((day) => isToday(parseISO(day.date))) || 0;
-    });
-
     // Animation states
     const [isVisible, setIsVisible] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-
-    // Use either prop value or local state
-    const selectedDateIndex = propSelectedDateIndex !== undefined ? propSelectedDateIndex : localSelectedDateIndex;
-    const setSelectedDateIndex = propSetSelectedDateIndex || setLocalSelectedDateIndex;
-
     const isMobile = useIsMobile();
 
-    const selectedDay = data[selectedDateIndex];
+    const selectedDay = data;
 
     useEffect(() => {
-        // Delay the graph card appearance to come after library cards
-        // Assuming 5 library cards with 100ms stagger = ~500ms total
-        // Add extra delay for smoother sequence
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-
-            setTimeout(() => {
-                setIsVisible(true);
-            }, 0);
-        }, 0); // Delay after libraries are loaded
-
-        return () => clearTimeout(timer);
+        setIsVisible(true);
     }, []);
 
     // Prepare chart data
@@ -113,7 +79,7 @@ export default function OccupancyGraph({
                       const libraryData = selectedDay.occupancy[library.id][index];
                       if (libraryData) {
                           dataPoint[library.id] = libraryData.occupancy;
-                          dataPoint[`${library.id}-prediction`] = libraryData.prediction;
+                          if (ENABLE_PREDICTION) dataPoint[`${library.id}-prediction`] = libraryData.prediction;
                       }
                   });
 
@@ -124,20 +90,18 @@ export default function OccupancyGraph({
           })()
         : [];
 
-    const navigateDate = (direction: 'prev' | 'next') => {
-        /*if (direction === 'prev' && selectedDateIndex > 0) {
-            setSelectedDateIndex(selectedDateIndex - 1);
-        } else if (direction === 'next' && selectedDateIndex < data.length - 1) {
-            // Check if next date is in the future
-            const nextDate = parseISO(data[selectedDateIndex + 1].date);
-            if (!isFuture(nextDate)) {
-                setSelectedDateIndex(selectedDateIndex + 1);
-            }
-        }*/
+    const navigateBack = () => {
+        //go to the previous page
+        const currentDate = parseISO(data.date);
+        const newDate = addDays(currentDate, -1);
 
-        //get the current date from the data array, if pressing next or previous navigate to ?date=YYYY-MM-DD . do not allow the future
-        const currentDate = parseISO(data[selectedDateIndex].date);
-        const newDate = direction === 'prev' ? addDays(currentDate, -1) : addDays(currentDate, 1);
+        router.push(`?date=${format(newDate, 'yyyy-MM-dd')}`);
+    };
+
+    const navigateForward = () => {
+        //go to the next page
+        const currentDate = parseISO(data.date);
+        const newDate = addDays(currentDate, 1);
 
         // Check if the new date is in the future
         if (isFuture(newDate)) {
@@ -147,34 +111,51 @@ export default function OccupancyGraph({
         router.push(`?date=${format(newDate, 'yyyy-MM-dd')}`);
     };
 
+    const canGoForward = () => {
+        // Check if the new date is in the future
+        const currentDate = parseISO(data.date);
+        const newDate = addDays(currentDate, 1);
+        return !isFuture(newDate);
+    };
+
     // Format the displayed date
     const formattedDate = selectedDay ? format(parseISO(selectedDay.date), 'EEEE, d. MMMM yyyy', { locale: de }) : '';
 
     // Determine which libraries to show
     const visibleLibraries = libraries.filter((lib) => !showOnlyFavorites || favorites.includes(lib.id));
 
-    // Format time labels on X-axis
-    const formatXAxis = (time: string) => {
-        // Only show full hours
-        return time.endsWith(':00') ? time : '';
-    };
+    const scrapeFailed = (() => {
+        if (chartData.length === 0) return false;
+        const last = chartData[chartData.length - 1];
+        return visibleLibraries.every((lib) => {
+            const val = last[lib.id as keyof typeof last] as number | null | undefined;
+            return val === null || val === -1 || val === undefined;
+        });
+    })();
 
-    // If on mobile, we'll render the mobile version of the graph from the parent component
     if (isMobile) {
         return null;
     }
 
-    console.log('selectedDateIndex:', selectedDateIndex);
-
     return (
         <>
-            {selectedDateIndex === 0 && (
+            {!isToday(data.date) && (
                 <div className="flex items-center justify-end mb-4 w-full">
                     <button
                         onClick={() => router.push('/')}
                         className="text-sm px-3 py-1 rounded-full transition-all duration-200 bg-secondary hover:bg-secondary/80">
                         Zurück zur Übersicht
                     </button>
+                </div>
+            )}
+            {/* ➋ Warnung anzeigen, falls Scrape fehlgeschlagen */}
+            {scrapeFailed && (
+                <div className="mb-4 flex items-start space-x-2 p-3 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 text-sm">
+                    <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
+                    <p>
+                        Die aktuellsten Daten konnten nicht von der Website geladen werden. Sollte das Problem weiterhin
+                        bestehen, kontaktieren Sie bitte unser Team.
+                    </p>
                 </div>
             )}
             <div
@@ -185,7 +166,7 @@ export default function OccupancyGraph({
                     <h2 className="text-xl font-medium">Bibliotheksauslastung</h2>
                     <div className="flex items-center space-x-2">
                         <button
-                            onClick={() => navigateDate('prev')}
+                            onClick={() => navigateBack()}
                             className="p-1.5 rounded-lg bg-secondary/50 hover:bg-secondary transition-all duration-200"
                             aria-label="Previous day">
                             <ChevronLeft className="w-5 h-5" />
@@ -194,17 +175,12 @@ export default function OccupancyGraph({
                         <span className="text-sm font-medium px-2">{formattedDate}</span>
 
                         <button
-                            onClick={() => navigateDate('next')}
+                            onClick={() => navigateForward()}
                             className={`p-1.5 rounded-lg transition-all duration-200 ${
-                                selectedDateIndex < data.length - 1 &&
-                                !isFuture(parseISO(data[selectedDateIndex + 1].date))
+                                canGoForward()
                                     ? 'bg-secondary/50 hover:bg-secondary'
                                     : 'bg-secondary/20 text-muted-foreground cursor-not-allowed'
                             }`}
-                            disabled={
-                                selectedDateIndex >= data.length - 1 ||
-                                isFuture(parseISO(data[selectedDateIndex + 1].date))
-                            }
                             aria-label="Next day">
                             <ChevronRight className="w-5 h-5" />
                         </button>
@@ -228,13 +204,7 @@ export default function OccupancyGraph({
                             />
                             <YAxis domain={[0, 100]} tickCount={6} unit="%" tick={{ fontSize: 12 }} tickMargin={10} />
                             {/* Horizontal threshold line at 75% */}
-                            <ReferenceLine
-                                y={75}
-                                stroke="red"
-                                strokeDasharray="3 3"
-                                strokeWidth={1}
-                                label={{ value: '75%', position: 'left', fill: 'red', fontSize: 12 }}
-                            />
+                            <ReferenceLine y={80} stroke="red" strokeDasharray="3 3" strokeWidth={1} />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend />
 
@@ -251,19 +221,20 @@ export default function OccupancyGraph({
                                 />
                             ))}
 
-                            {visibleLibraries.map((library) => (
-                                <Line
-                                    key={`${library.id}-prediction`}
-                                    type="monotone"
-                                    dataKey={`${library.id}-prediction`}
-                                    name={`${library.name} (Prognose)`}
-                                    stroke={library.color}
-                                    strokeWidth={1.5}
-                                    strokeDasharray="5 5"
-                                    dot={false}
-                                    activeDot={{ r: 4 }}
-                                />
-                            ))}
+                            {ENABLE_PREDICTION &&
+                                visibleLibraries.map((library) => (
+                                    <Line
+                                        key={`${library.id}-prediction`}
+                                        type="monotone"
+                                        dataKey={`${library.id}-prediction`}
+                                        name={`${library.name} (Prognose)`}
+                                        stroke={library.color}
+                                        strokeWidth={1.5}
+                                        strokeDasharray="5 5"
+                                        dot={false}
+                                        activeDot={{ r: 4 }}
+                                    />
+                                ))}
                         </LineChart>
                     </ResponsiveContainer>
                 </div>

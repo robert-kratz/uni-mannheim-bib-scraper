@@ -1,6 +1,8 @@
 // lib/scraper.ts
 import axios, { AxiosResponse } from 'axios';
 import { load } from 'cheerio';
+import { CalendarEvent, EventType } from '@/drizzle/schema';
+import { InferInsertModel } from 'drizzle-orm';
 
 /**
  * Ein DB-Row für die Tabelle "BibData".
@@ -111,4 +113,68 @@ export async function fetchScrapedData(url: string): Promise<BibDataRow[]> {
         });
 
     return rows;
+}
+
+export type CalendarEventRow = InferInsertModel<typeof CalendarEvent>;
+
+/** daraus der Enum-Typ nur für die Spalte `type` */
+type EventKind = CalendarEventRow['type']; // 'lecture' | 'exam' | ...
+
+/** Label-Text → Enum-Value-Mapping */
+const typeMap: Record<string, EventKind> = {
+    vorlesungszeit: 'lecture',
+    prüfungszeit: 'exam',
+    'zweittermin prüfungen': 'exam',
+    osterferien: 'holiday',
+    semester: 'info',
+    rückmeldung: 'info',
+};
+
+/** Wandelt "1.2.2025" → Date(2025-02-01) (UTC 00:00) */
+function parseDMY(dmy: string): Date {
+    const [d, m, y] = dmy.split('.').map((n) => parseInt(n, 10));
+    return new Date(Date.UTC(y, m - 1, d));
+}
+/** normalisiert Label → lowerCase ohne geschützte Trenner/Soft-Hyphens */
+function normalizeLabel(raw: string): string {
+    return raw
+        .replace(/\u00AD/g, '') // Soft-Hyphen (­)
+        .replace(/[:–\u2013]/g, '') // Doppelpkt + EnDash
+        .trim()
+        .toLowerCase();
+}
+
+export async function fetchCalendarEvents(url: string): Promise<CalendarEventRow[]> {
+    const html = (await axios.get(url)).data;
+    const $ = load(html);
+
+    const events: CalendarEventRow[] = [];
+
+    $('table.ce-table').each((_i, tbl) => {
+        $(tbl)
+            .find('tr')
+            .each((_j, row) => {
+                const rawLabel = $(row).find('td:first-child').text();
+                const label = normalizeLabel(rawLabel);
+
+                const rangeText = $(row).find('td:nth-child(2)').text().trim();
+                if (!label || !rangeText) return;
+
+                const [from, to] = rangeText.split(/–|-/).map((s) => s.trim());
+                if (!from || !to) return;
+
+                // passenden Typ suchen (Substring-Match)
+                const foundKey = Object.keys(typeMap).find((key) => label.includes(key));
+                const type: EventKind = foundKey ? typeMap[foundKey] : 'info';
+
+                events.push({
+                    name: `${rawLabel.trim()} ${from.split('.').pop()}`, // vollständige Überschrift im Namen
+                    type,
+                    start: parseDMY(from),
+                    end: parseDMY(to),
+                });
+            });
+    });
+
+    return events;
 }

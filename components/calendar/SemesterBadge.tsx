@@ -9,24 +9,30 @@ interface SemesterBadgeProps {
 const SemesterBadge: React.FC<SemesterBadgeProps> = ({ semesterPeriods }) => {
     const getCurrentSemester = () => {
         const today = new Date();
-        const currentSemester = semesterPeriods.find(
-            (period) =>
-                period.type === 'lecture' &&
-                period.name.includes('semester') &&
-                isWithinInterval(today, {
-                    start: parseISO(period.start),
-                    end: parseISO(period.end),
-                })
-        );
 
-        if (currentSemester) {
-            // Extract semester code (e.g., "FFS25" or "HSW25")
-            if (currentSemester.name.includes('Frühjahr')) {
-                return `FFS${currentSemester.start.substring(2, 4)}`;
-            } else if (currentSemester.name.includes('Herbst')) {
-                return `HSW${currentSemester.start.substring(2, 4)}`;
-            }
-            return currentSemester.name;
+        const todayEvents = semesterPeriods.filter((period) => {
+            return isWithinInterval(today, {
+                start: parseISO(period.start),
+                end: parseISO(period.end),
+            });
+        });
+
+        if (todayEvents.length > 0) {
+            const currentEvent = todayEvents[0];
+            console.log('Current Event:', currentEvent);
+            return currentEvent.name;
+        }
+
+        // If no events for today, check for the next event
+        const nextEvent = semesterPeriods.find((period) => {
+            return isWithinInterval(today, {
+                start: parseISO(period.start),
+                end: parseISO(period.end),
+            });
+        });
+
+        if (nextEvent) {
+            return nextEvent.name;
         }
 
         return 'Vorlesungsfreie Zeit';

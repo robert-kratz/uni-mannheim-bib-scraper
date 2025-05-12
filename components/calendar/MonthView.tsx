@@ -46,17 +46,17 @@ const MonthView: React.FC<MonthViewProps> = ({
                             key={format(day, 'yyyy-MM-dd')}
                             onClick={() => onSelectDate(day)}
                             className={`
-                h-8 flex items-center justify-center text-xs sm:text-sm transition-all-200 relative
-                ${isSelected ? 'font-bold z-10' : ''}
-              `}>
+                                h-8 flex items-center justify-center text-xs sm:text-sm transition-all-200 relative
+                                ${isSelected ? 'font-bold z-10' : ''}
+                              `}>
                             <span
                                 className={`
-                absolute inset-0 ${dayColor}
-              `}></span>
+                                    absolute inset-0 ${dayColor}
+                                  `}></span>
                             <span
                                 className={`
-                ${isSelected ? 'bg-accent text-white rounded-full w-7 h-7 flex items-center justify-center z-20' : 'z-20 relative'}
-              `}>
+                                    ${isSelected ? 'bg-accent text-white rounded-full w-7 h-7 flex items-center justify-center z-20' : 'z-20 relative'}
+                                  `}>
                                 {format(day, 'd')}
                             </span>
                         </button>

@@ -27,7 +27,6 @@ const Calendar = ({ semesterPeriods, selectedDate, onSelectDate }: CalendarProps
 
     // Animation states
     const [isVisible, setIsVisible] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
 
     // Navigate to previous/next month
     const navigateMonth = (direction: 'prev' | 'next') => {
@@ -69,8 +68,6 @@ const Calendar = ({ semesterPeriods, selectedDate, onSelectDate }: CalendarProps
         // This component should appear after both libraries and graph
         // Total delay = library cards (500ms) + graph (800ms + 300ms) + extra buffer
         const timer = setTimeout(() => {
-            setIsLoading(false);
-
             // Additional delay before showing the calendar
             setTimeout(() => {
                 setIsVisible(true);
@@ -93,11 +90,8 @@ const Calendar = ({ semesterPeriods, selectedDate, onSelectDate }: CalendarProps
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
                 }`}>
                 <CalendarHeader currentMonth={currentMonth} navigateMonth={navigateMonth} />
-
                 <EventLegend />
-
                 <SemesterBadge semesterPeriods={semesterPeriods} />
-
                 <div
                     ref={scrollContainerRef}
                     className="w-full overflow-x-auto pb-4 snap-x snap-mandatory"
@@ -119,9 +113,7 @@ const Calendar = ({ semesterPeriods, selectedDate, onSelectDate }: CalendarProps
                         ))}
                     </div>
                 </div>
-
                 <DayEvents selectedDate={selectedDate} selectedDayEvents={selectedDayEvents} />
-
                 <NextEventCountdown nextEvent={nextEvent} />
             </div>
         </>

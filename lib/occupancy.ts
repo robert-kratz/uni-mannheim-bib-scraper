@@ -6,29 +6,16 @@ import { db } from '@/drizzle';
 
 const CHUNKS_PER_DAY = 24 * 6; // 144
 
-/**
- * Liefert für ein gegebenes Datum (YYYY-MM-DD) die Zeitreihe
- * aller 10-Minuten-Slots jeder Bibliothek, inkl. prediction falls vorhanden.
- * Du kannst mit startChunk/endChunk einschränken, welche Slot-Indizes zurückkommen.
- *
- * @param date       Datum im Format YYYY-MM-DD
- * @param startChunk Index des ersten Chunks (0-basierend), default 0
- * @param endChunk   Index des letzten Chunks, default CHUNKS_PER_DAY-1
- */
 export async function getDailyOccupancy(
     date: string,
-    startChunk: number = 0,
-    endChunk: number = CHUNKS_PER_DAY - 1
+    startChunk = 0,
+    endChunk = CHUNKS_PER_DAY - 1
 ): Promise<DailyOccupancyData> {
-    const [year, month, day] = date.split('-').map((n) => parseInt(n, 10));
+    const [year, month, day] = date.split('-').map(Number);
 
-    // 1) Rohdaten abfragen
+    /* ----------------------------- Daten holen ----------------------------- */
     const dataRows = await db
-        .select({
-            name: BibData.name,
-            chunk: BibData.chunk,
-            occupancy: BibData.percentage,
-        })
+        .select({ name: BibData.name, chunk: BibData.chunk, occupancy: BibData.percentage })
         .from(BibData)
         .where(and(eq(BibData.year, year), eq(BibData.month, month), eq(BibData.day, day)));
 
@@ -43,16 +30,15 @@ export async function getDailyOccupancy(
             and(eq(BibPredictionData.year, year), eq(BibPredictionData.month, month), eq(BibPredictionData.day, day))
         );
 
-    // 2) Alle Bibliotheksnamen sammeln
-    const libSet = new Set<string>();
-    dataRows.forEach((r) => libSet.add(r.name ?? ''));
-    predRows.forEach((r) => libSet.add(r.name ?? ''));
-    const libs = Array.from(libSet).sort();
+    /* ---------------------- Lib-Liste & Maps vorbereiten ------------------- */
+    const libs = new Set<string>();
+    dataRows.forEach((r) => libs.add(r.name ?? ''));
+    predRows.forEach((r) => libs.add(r.name ?? ''));
 
-    // 3) Maps für schnellen Zugriff bauen
     const occMap = new Map<string, Map<number, number>>();
     dataRows.forEach(({ name, chunk, occupancy }) => {
         if (name == null || chunk == null || occupancy == null) return;
+
         if (!occMap.has(name)) occMap.set(name, new Map());
         occMap.get(name)!.set(chunk, occupancy);
     });
@@ -60,37 +46,69 @@ export async function getDailyOccupancy(
     const predMap = new Map<string, Map<number, number>>();
     predRows.forEach(({ name, chunk, prediction }) => {
         if (name == null || chunk == null || prediction == null) return;
+
         if (!predMap.has(name)) predMap.set(name, new Map());
         predMap.get(name)!.set(chunk, prediction);
     });
 
-    // 4) Helper: Chunk → "HH:MM"
+    /* --------------------- Heutigen Berlin-Chunk ermitteln ----------------- */
+    const now = new Date();
+    const nowParts = new Intl.DateTimeFormat('de-DE', {
+        timeZone: 'Europe/Berlin',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    })
+        .formatToParts(now)
+        .reduce<Record<string, string>>((a, p) => {
+            if (p.type !== 'literal') a[p.type] = p.value;
+            return a;
+        }, {});
+
+    const todayStr = `${nowParts.year}-${nowParts.month}-${nowParts.day}`;
+    const isToday = date === todayStr;
+    const currentChunk = Math.floor((parseInt(nowParts.hour) * 60 + parseInt(nowParts.minute)) / 10);
+
+    /* ------------------------- Chunk → "HH:MM" Helper ---------------------- */
     const formatTime = (chunk: number): string => {
-        const hh = Math.floor(chunk / 6);
-        const mm = (chunk % 6) * 10;
-        return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+        const h = Math.floor(chunk / 6);
+        const m = (chunk % 6) * 10;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     };
 
-    // 5) Ergebnis aufbauen mit Einschränkung auf startChunk…endChunk
+    /* ----------------------- Result pro Bibliothek ------------------------- */
     const occupancy: Record<string, OccupancyDataPoint[]> = {};
-    libs.forEach((lib) => {
-        const oMap = occMap.get(lib) ?? new Map();
-        const pMap = predMap.get(lib) ?? new Map();
 
-        const points: OccupancyDataPoint[] = [];
-        for (let chunk = startChunk; chunk <= endChunk; chunk++) {
-            const point: OccupancyDataPoint = {
-                time: formatTime(chunk),
-                occupancy: oMap.get(chunk) ?? 0,
-            };
-            const pred = pMap.get(chunk);
-            if (pred !== undefined) {
-                point.prediction = pred;
+    Array.from(libs)
+        .sort()
+        .forEach((lib) => {
+            const oMap = occMap.get(lib) ?? new Map();
+            const pMap = predMap.get(lib) ?? new Map();
+
+            const points: OccupancyDataPoint[] = [];
+            for (let chunk = startChunk; chunk <= endChunk; chunk++) {
+                const inFuture = isToday && chunk > currentChunk;
+
+                const occVal: number | null = inFuture ? null : (oMap.get(chunk) ?? null);
+
+                const point: OccupancyDataPoint = {
+                    time: formatTime(chunk),
+                    occupancy: occVal,
+                };
+
+                if (!inFuture) {
+                    const pred = pMap.get(chunk);
+                    if (pred !== undefined) point.prediction = pred;
+                }
+
+                points.push(point);
             }
-            points.push(point);
-        }
-        occupancy[lib] = points;
-    });
+
+            occupancy[lib] = points;
+        });
 
     return { date, occupancy };
 }

@@ -7,50 +7,45 @@ export const getPeriodsForDay = (date: Date, semesterPeriods: SemesterPeriod[]) 
     return semesterPeriods.filter((period) => dateStr >= period.start && dateStr <= period.end);
 };
 
-// Get period type for a day based on semester periods with priority
+const getPriority = (type: SemesterPeriod['type']): number => {
+    switch (type) {
+        case 'exam':
+            return 0;
+        case 'holiday':
+            return 1;
+        case 'break':
+            return 2;
+        case 'lecture':
+            return 3;
+        default:
+            return 4;
+    }
+};
+
 export const getDayPeriodType = (
     date: Date,
-    semesterPeriods: SemesterPeriod[]
-): { type: string; isStart: boolean; isEnd: boolean } | null => {
+    periods: SemesterPeriod[]
+): { type: SemesterPeriod['type']; isStart: boolean; isEnd: boolean } | null => {
     const dateStr = format(date, 'yyyy-MM-dd');
 
-    // Define priority order: holiday (highest) -> break -> exam -> lecture (lowest)
-    const priorityOrder = {
-        holiday: 0,
-        break: 1,
-        exam: 2,
-        lecture: 3,
-    };
+    const applicable = periods.filter((p) => p.start <= dateStr && dateStr <= p.end);
+    if (applicable.length === 0) return null;
 
-    // Collect all applicable periods for this day
-    const applicablePeriods = semesterPeriods.filter((period) => dateStr >= period.start && dateStr <= period.end);
-
-    if (applicablePeriods.length === 0) return null;
-
-    // Sort by priority and get the highest priority period
-    applicablePeriods.sort(
-        (a, b) =>
-            priorityOrder[a.type as keyof typeof priorityOrder] - priorityOrder[b.type as keyof typeof priorityOrder]
-    );
-
-    const highestPriorityPeriod = applicablePeriods[0];
+    const top = applicable.reduce((best, cur) => (getPriority(cur.type) < getPriority(best.type) ? cur : best));
 
     return {
-        type: highestPriorityPeriod.type,
-        isStart: dateStr === highestPriorityPeriod.start,
-        isEnd: dateStr === highestPriorityPeriod.end,
+        type: top.type,
+        isStart: dateStr === top.start,
+        isEnd: dateStr === top.end,
     };
 };
 
-// Get next important date countdown
 export const getNextEventCountdown = (semesterPeriods: SemesterPeriod[]) => {
     const today = new Date();
 
-    // Filter for exam periods that are in the future
     const upcomingExams = semesterPeriods.filter((period) => period.type === 'exam' && parseISO(period.start) > today);
 
     if (upcomingExams.length > 0) {
-        // Sort by start date to get the closest exam period
         upcomingExams.sort((a, b) => parseISO(a.start).getTime() - parseISO(b.start).getTime());
 
         const nextExam = upcomingExams[0];
@@ -65,7 +60,6 @@ export const getNextEventCountdown = (semesterPeriods: SemesterPeriod[]) => {
         };
     }
 
-    // If no exam periods, check for breaks
     const upcomingBreaks = semesterPeriods.filter(
         (period) => period.type === 'break' && parseISO(period.start) > today
     );
@@ -88,7 +82,6 @@ export const getNextEventCountdown = (semesterPeriods: SemesterPeriod[]) => {
     return null;
 };
 
-// Get day color for calendar display
 export const getDayColor = (date: Date, dayIndex: number, days: Date[], semesterPeriods: SemesterPeriod[]) => {
     const periodInfo = getDayPeriodType(date, semesterPeriods);
 
@@ -133,7 +126,13 @@ export const getDayColor = (date: Date, dayIndex: number, days: Date[], semester
 
     let colorClass = '';
     switch (periodInfo.type) {
+        case 'exam':
+            colorClass = 'bg-red-100 dark:bg-red-900/30';
+            break;
         case 'lecture':
+            colorClass = 'bg-blue-100 dark:bg-blue-900/30';
+            break;
+        case 'info':
             colorClass = 'bg-blue-100 dark:bg-blue-900/30';
             break;
         case 'holiday':
@@ -141,9 +140,6 @@ export const getDayColor = (date: Date, dayIndex: number, days: Date[], semester
             break;
         case 'break':
             colorClass = 'bg-amber-100 dark:bg-amber-900/30';
-            break;
-        case 'exam':
-            colorClass = 'bg-red-100 dark:bg-red-900/30';
             break;
         default:
             colorClass = 'bg-transparent';

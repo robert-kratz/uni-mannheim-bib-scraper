@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
-import { useEffect, useState } from 'react';
 
 const cn = (...classes: string[]) => {
     return classes.filter(Boolean).join(' ');
@@ -20,7 +19,6 @@ const Progress = React.forwardRef<
         indicatorClassName?: string;
     }
 >(({ className = '', value = 0, indicatorClassName = '', ...props }, ref) => {
-    // Stelle sicher, dass value im Bereich 0–100 ist
     const safeValue = Math.min(Math.max(value ?? 0, 0), 100);
     const colorClass = getColorClass(safeValue);
 

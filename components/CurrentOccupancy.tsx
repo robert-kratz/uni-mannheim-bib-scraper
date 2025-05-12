@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Library, OccupancyDataPoint } from '@/utils/types';
 import { Progress } from '@/components/ui/progress';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
 
 interface CurrentOccupancyProps {
     libraries: Library[];
@@ -44,7 +44,10 @@ const CurrentOccupancy = ({ libraries, data, favorites, showOnlyFavorites }: Cur
         const currentIndex = libraryData.findIndex((d) => d.time === currentData.time);
         if (currentIndex > 0) {
             const prevOccupancy = libraryData[currentIndex - 1].occupancy;
-            if (currentData.occupancy > prevOccupancy) {
+
+            if (currentData.occupancy === null || prevOccupancy === null) {
+                trend = 'stable';
+            } else if (currentData.occupancy > prevOccupancy) {
                 trend = 'up';
             } else if (currentData.occupancy < prevOccupancy) {
                 trend = 'down';
@@ -95,6 +98,9 @@ const CurrentOccupancy = ({ libraries, data, favorites, showOnlyFavorites }: Cur
                                 <div className="flex items-center gap-1">
                                     <span className="text-sm font-medium">{occupancyData.occupancy}%</span>
                                     {occupancyData.trend === 'up' && <ArrowUp size={18} className="text-red-500" />}
+                                    {occupancyData.trend === 'stable' && (
+                                        <ArrowRight size={18} className="text-gray-500" />
+                                    )}
                                     {occupancyData.trend === 'down' && (
                                         <ArrowDown size={18} className="text-green-500" />
                                     )}
@@ -104,7 +110,7 @@ const CurrentOccupancy = ({ libraries, data, favorites, showOnlyFavorites }: Cur
                             <Progress
                                 value={occupancyData.occupancy}
                                 className="h-2"
-                                indicatorClassName={getOccupancyColor(occupancyData.occupancy)}
+                                indicatorClassName={getOccupancyColor(occupancyData.occupancy || 0)}
                             />
                         </div>
                     );

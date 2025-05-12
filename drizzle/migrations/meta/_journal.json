@@ -15,6 +15,20 @@
       "when": 1747069960135,
       "tag": "0001_tiresome_the_renegades",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1747080785566,
+      "tag": "0002_tan_morg",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1747080949232,
+      "tag": "0003_omniscient_sharon_carter",
+      "breakpoints": true
     }
   ]
 }

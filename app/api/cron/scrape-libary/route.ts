@@ -5,16 +5,12 @@ dotenv.config();
 import { fetchScrapedData, BibDataRow } from '@/lib/scraper';
 import { BibData } from '@/drizzle/schema';
 import { db } from '@/drizzle';
+import { ALLOWED_LIBS } from '@/utils/constants';
 
-const ALLOWED_LIBS = new Set(['A3', 'A5', 'Jura', 'Schloss', 'BWL']);
-
-// Dieses Secret muss in deiner .env stehen:
-// API_KEY=dein-geheimes-token
 const API_KEY = process.env.API_KEY;
-// Die URL, die gescrapt werden soll:
-//const SCRAPE_URL = 'https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/';
-const SCRAPE_URL =
-    'https://web.archive.org/web/20250409175544/https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/';
+
+const SCRAPE_URL = 'https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/';
+//const SCRAPE_URL = ('https://web.archive.org/web/20250409175544/https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/'); # Only for testing
 
 if (!API_KEY) {
     throw new Error('API_KEY is not set in your environment');
@@ -39,7 +35,6 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // 2) Scrape die Roh-Daten
         const scraped: BibDataRow[] = await fetchScrapedData(SCRAPE_URL);
 
         console.log('Scraped data:', scraped);
@@ -60,8 +55,6 @@ export async function GET(request: NextRequest) {
                 });
                 inserted++;
             } catch (e) {
-                // falls etwas schiefgeht bei genau diesem Datensatz,
-                // einfach weiter – wir wollen keinen kompletten Cron-Abbruch.
                 console.error('Insert error for', row, e);
             }
         }
