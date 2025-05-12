@@ -13,6 +13,8 @@ const CALENDAR_URL = 'https://www.uni-mannheim.de/studium/termine/semesterzeiten
 if (!API_KEY) throw new Error('API_KEY missing');
 if (!CALENDAR_URL) throw new Error('CALENDAR_URL missing');
 
+export const runtime = 'nodejs';
+
 export async function GET(req: NextRequest) {
     // Auth
     if (req.headers.get('x-api-key') !== API_KEY) {

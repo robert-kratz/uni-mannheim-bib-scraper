@@ -25,8 +25,9 @@ function computeTTL(iat: Date): Date {
     return t;
 }
 
+export const runtime = 'nodejs';
+
 export async function GET(request: NextRequest) {
-    // 1) Authentifiziere den Cron-Job
     const key = request.headers.get('x-api-key');
     console.log('Cron job called with key:', key);
     console.log('API_KEY:', API_KEY);
