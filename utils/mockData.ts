@@ -1,11 +1,11 @@
 import { Library, DailyOccupancyData, SemesterPeriod } from './types';
 
 export const libraries: Library[] = [
-    { id: 'bib-a3', name: 'A3 Bibliothek', color: '#3B82F6' }, // Blue
-    { id: 'bib-a5', name: 'A5 Bibliothek', color: '#10B981' }, // Green
-    { id: 'bib-schloss', name: 'Schloss Bibliothek', color: '#F59E0B' }, // Amber
-    { id: 'bib-jura', name: 'Jura Bibliothek', color: '#EC4899' }, // Pink
-    { id: 'bib-bwl', name: 'BWL Bibliothek', color: '#8B5CF6' }, // Purple
+    { id: 'A3', name: 'A3 Bibliothek', color: '#3B82F6' }, // Blue
+    { id: 'A5', name: 'A5 Bibliothek', color: '#10B981' }, // Green
+    { id: 'Schloss', name: 'Schloss Bibliothek', color: '#F59E0B' }, // Amber
+    { id: 'Jura', name: 'Jura Bibliothek', color: '#EC4899' }, // Pink
+    { id: 'BWL', name: 'BWL Bibliothek', color: '#8B5CF6' }, // Purple
 ];
 
 function generateDailyData(date: string, dayOffset: number = 0): DailyOccupancyData {

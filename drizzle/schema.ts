@@ -6,25 +6,27 @@ export const EventType = pgEnum('EventType', ['lecture', 'exam', 'holiday', 'bre
 // BibData table
 export const BibData = pgTable('BibData', {
     id: serial('id').primaryKey(),
-    percentage: integer('percentage'),
+    percentage: integer('occupancy'),
     name: text('name'),
     year: integer('year'),
     month: integer('month'),
     day: integer('day'),
     chunk: integer('chunk'),
     iat: timestamp('iat'),
+    ttl: timestamp('ttl'),
 });
 
 // BibPredictionData table
 export const BibPredictionData = pgTable('BibPredictionData', {
     id: serial('id').primaryKey(),
-    percentage: integer('percentage'),
+    percentage: integer('occupancy'),
     name: text('name'),
     year: integer('year'),
     month: integer('month'),
     day: integer('day'),
     chunk: integer('chunk'),
     iat: timestamp('iat'),
+    ttl: timestamp('ttl'),
 });
 
 // CalendarEvent table

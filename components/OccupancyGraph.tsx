@@ -17,6 +17,7 @@ import { Library, DailyOccupancyData } from '@/utils/types';
 import { format, parseISO, isToday, addDays, isFuture } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useRouter } from 'next/navigation';
 
 interface OccupancyGraphProps {
     libraries: Library[];
@@ -55,6 +56,12 @@ export default function OccupancyGraph({
     selectedDateIndex: propSelectedDateIndex,
     setSelectedDateIndex: propSetSelectedDateIndex,
 }: OccupancyGraphProps) {
+    console.log('OccupancyGraph rendered');
+    console.log('Libraries:', libraries);
+    console.log('Data:', data);
+
+    const router = useRouter();
+
     const [localSelectedDateIndex, setLocalSelectedDateIndex] = useState<number>(() => {
         // Find today's index in the data array
         return data.findIndex((day) => isToday(parseISO(day.date))) || 0;
@@ -118,7 +125,7 @@ export default function OccupancyGraph({
         : [];
 
     const navigateDate = (direction: 'prev' | 'next') => {
-        if (direction === 'prev' && selectedDateIndex > 0) {
+        /*if (direction === 'prev' && selectedDateIndex > 0) {
             setSelectedDateIndex(selectedDateIndex - 1);
         } else if (direction === 'next' && selectedDateIndex < data.length - 1) {
             // Check if next date is in the future
@@ -126,7 +133,18 @@ export default function OccupancyGraph({
             if (!isFuture(nextDate)) {
                 setSelectedDateIndex(selectedDateIndex + 1);
             }
+        }*/
+
+        //get the current date from the data array, if pressing next or previous navigate to ?date=YYYY-MM-DD . do not allow the future
+        const currentDate = parseISO(data[selectedDateIndex].date);
+        const newDate = direction === 'prev' ? addDays(currentDate, -1) : addDays(currentDate, 1);
+
+        // Check if the new date is in the future
+        if (isFuture(newDate)) {
+            return;
         }
+
+        router.push(`?date=${format(newDate, 'yyyy-MM-dd')}`);
     };
 
     // Format the displayed date
@@ -146,15 +164,25 @@ export default function OccupancyGraph({
         return null;
     }
 
+    console.log('selectedDateIndex:', selectedDateIndex);
+
     return (
         <>
+            {selectedDateIndex === 0 && (
+                <div className="flex items-center justify-end mb-4 w-full">
+                    <button
+                        onClick={() => router.push('/')}
+                        className="text-sm px-3 py-1 rounded-full transition-all duration-200 bg-secondary hover:bg-secondary/80">
+                        Zurück zur Übersicht
+                    </button>
+                </div>
+            )}
             <div
                 className={`w-full bg-white dark:bg-card rounded-xl border border-border p-4 shadow-sm mb-8 transition-all duration-500 ${
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}>
                 <div className="flex sm:items-center sm:justify-between flex-col sm:flex-row mb-4 gap-2">
                     <h2 className="text-xl font-medium">Bibliotheksauslastung</h2>
-
                     <div className="flex items-center space-x-2">
                         <button
                             onClick={() => navigateDate('prev')}
