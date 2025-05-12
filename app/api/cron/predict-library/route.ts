@@ -1,4 +1,4 @@
-// app/api/cron/predict-libary/route.ts
+// app/api/cron/predict-library/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import dotenv from 'dotenv';
 dotenv.config();

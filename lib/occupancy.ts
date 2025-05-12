@@ -6,6 +6,9 @@ import { db } from '@/drizzle';
 
 const CHUNKS_PER_DAY = 24 * 6; // 144
 
+// Immer diese fünf Bibliotheken zurückliefern, auch wenn keine DB-Daten existieren
+const ALL_LIBS = ['A3', 'A5', 'Jura', 'Schloss', 'BWL'] as const;
+
 export async function getDailyOccupancy(
     date: string,
     startChunk = 0,
@@ -31,29 +34,34 @@ export async function getDailyOccupancy(
         );
 
     /* ---------------------- Lib-Liste & Maps vorbereiten ------------------- */
-    const libs = new Set<string>();
-    dataRows.forEach((r) => libs.add(r.name ?? ''));
-    predRows.forEach((r) => libs.add(r.name ?? ''));
+    // Beginne immer mit ALL_LIBS
+    const libsSet = new Set<string>(ALL_LIBS);
+
+    // Ergänze um alle Bibliotheken, die tatsächlich Daten haben (falls DB mal mehr enthält)
+    dataRows.forEach((r) => {
+        if (r.name) libsSet.add(r.name);
+    });
+    predRows.forEach((r) => {
+        if (r.name) libsSet.add(r.name);
+    });
 
     const occMap = new Map<string, Map<number, number>>();
     dataRows.forEach(({ name, chunk, occupancy }) => {
-        if (name == null || chunk == null || occupancy == null) return;
-
+        if (!name || chunk == null || occupancy == null) return;
         if (!occMap.has(name)) occMap.set(name, new Map());
         occMap.get(name)!.set(chunk, occupancy);
     });
 
     const predMap = new Map<string, Map<number, number>>();
     predRows.forEach(({ name, chunk, prediction }) => {
-        if (name == null || chunk == null || prediction == null) return;
-
+        if (!name || chunk == null || prediction == null) return;
         if (!predMap.has(name)) predMap.set(name, new Map());
         predMap.get(name)!.set(chunk, prediction);
     });
 
     /* --------------------- Heutigen Berlin-Chunk ermitteln ----------------- */
     const now = new Date();
-    const nowParts = new Intl.DateTimeFormat('de-DE', {
+    const parts = new Intl.DateTimeFormat('de-DE', {
         timeZone: 'Europe/Berlin',
         year: 'numeric',
         month: '2-digit',
@@ -68,9 +76,9 @@ export async function getDailyOccupancy(
             return a;
         }, {});
 
-    const todayStr = `${nowParts.year}-${nowParts.month}-${nowParts.day}`;
+    const todayStr = `${parts.year}-${parts.month}-${parts.day}`;
     const isToday = date === todayStr;
-    const currentChunk = Math.floor((parseInt(nowParts.hour) * 60 + parseInt(nowParts.minute)) / 10);
+    const currentChunk = Math.floor((+parts.hour * 60 + +parts.minute) / 10);
 
     /* ------------------------- Chunk → "HH:MM" Helper ---------------------- */
     const formatTime = (chunk: number): string => {
@@ -82,8 +90,9 @@ export async function getDailyOccupancy(
     /* ----------------------- Result pro Bibliothek ------------------------- */
     const occupancy: Record<string, OccupancyDataPoint[]> = {};
 
-    Array.from(libs)
-        .sort()
+    // Sortiert alphabetisch nach ALL_LIBS-Reihenfolge
+    Array.from(libsSet)
+        .sort((a, b) => ALL_LIBS.indexOf(a as any) - ALL_LIBS.indexOf(b as any))
         .forEach((lib) => {
             const oMap = occMap.get(lib) ?? new Map();
             const pMap = predMap.get(lib) ?? new Map();
@@ -91,7 +100,7 @@ export async function getDailyOccupancy(
             const points: OccupancyDataPoint[] = [];
             for (let chunk = startChunk; chunk <= endChunk; chunk++) {
                 const inFuture = isToday && chunk > currentChunk;
-
+                // Wenn in der Zukunft oder nicht vorhanden: null, sonst den Wert
                 const occVal: number | null = inFuture ? null : (oMap.get(chunk) ?? null);
 
                 const point: OccupancyDataPoint = {
