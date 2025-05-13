@@ -11,4 +11,4 @@ This project provides an overview of the utilization of the University of Mannhe
 
 # Author
 
-- [Robert Julian Kratz](https://rjks.us)
+- [Robert Julian Kratz](https://github.com/robert-kratz)
