@@ -18,6 +18,7 @@ import { format, parseISO, isToday, addDays, isFuture } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useRouter } from 'next/navigation';
+import { getDisplayName } from '@/lib/libraryNames';
 
 const ENABLE_PREDICTION = false; // Set to true to enable prediction lines, only here until we have a prediction API
 
@@ -37,7 +38,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                     {payload.map((entry: any, index: number) => (
                         <div key={index} className="flex items-center text-sm">
                             <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: entry.color }} />
-                            <span className="mr-2">{entry.name}:</span>
+                            <span className="mr-2">{getDisplayName(entry.name)}</span>
                             <span className="font-medium">{entry.value}%</span>
                         </div>
                     ))}
@@ -150,14 +151,14 @@ export default function OccupancyGraph({ libraries, data, favorites, showOnlyFav
         const lastThree = chartData.slice(lastIdx - 2, lastIdx + 1);
 
         // Welche Libraries prüfen (Favorites-Filter beachten)
-        const libsToCheck = libraries.filter(lib => !showOnlyFavorites || favorites.includes(lib.id));
+        const libsToCheck = libraries.filter((lib) => !showOnlyFavorites || favorites.includes(lib.id));
 
         // True, wenn in ALLEN dieser drei Punkte für ALL libs kein valider Wert kommt
         return lastThree.every((point: any) =>
-            libsToCheck.every(lib => {
+            libsToCheck.every((lib) => {
                 const v = point[lib.id];
                 return v === null || v === undefined || v === -1;
-            }),
+            })
         );
     })();
 
@@ -241,7 +242,7 @@ export default function OccupancyGraph({ libraries, data, favorites, showOnlyFav
                                     key={library.id}
                                     type="monotone"
                                     dataKey={library.id}
-                                    name={library.name}
+                                    name={getDisplayName(library.name)}
                                     stroke={library.color}
                                     strokeWidth={2}
                                     dot={false}

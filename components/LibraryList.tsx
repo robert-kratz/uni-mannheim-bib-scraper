@@ -3,6 +3,7 @@
 import { Heart } from 'lucide-react';
 import { Library } from '@/utils/types';
 import { useEffect, useState } from 'react';
+import { getDisplayName } from '@/lib/libraryNames';
 
 interface LibraryListProps {
     libraries: Library[];
@@ -84,7 +85,7 @@ export default function LibraryList({
                             </button>
                         </div>
                         <div className="w-12 h-2 rounded-full mb-3" style={{ backgroundColor: library.color }} />
-                        <h3 className="font-medium">{library.name}</h3>
+                        <h3 className="font-medium">{getDisplayName(library.name)}</h3>
                     </div>
                 ))}
             </div>

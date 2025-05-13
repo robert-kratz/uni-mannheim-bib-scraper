@@ -17,8 +17,16 @@ export default function Navbar() {
         const onScroll = () => {
             const y = window.scrollY;
 
-            setScrolled(y > 100);
+            if (y <= 90) {
+                setVisible(true);
+                setScrolled(y > 0); // Add background only if scrolled at all
+                setLastY(y);
+                return;
+            }
+
+            // After 40px, show/hide based on scroll direction
             setVisible(y <= lastY);
+            setScrolled(true); // Always have background after 40px
             setLastY(y);
         };
         window.addEventListener('scroll', onScroll, { passive: true });

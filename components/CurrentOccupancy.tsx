@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Library, OccupancyDataPoint } from '@/utils/types';
 import { Progress } from '@/components/ui/progress';
 import { ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
+import { getDisplayName } from '@/lib/libraryNames';
 
 interface CurrentOccupancyProps {
     libraries: Library[];
@@ -16,12 +17,7 @@ interface CurrentData {
     trend: Trend;
 }
 
-const CurrentOccupancy: React.FC<CurrentOccupancyProps> = ({
-                                                               libraries,
-                                                               data,
-                                                               favorites,
-                                                               showOnlyFavorites,
-                                                           }) => {
+const CurrentOccupancy: React.FC<CurrentOccupancyProps> = ({ libraries, data, favorites, showOnlyFavorites }) => {
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
         setMounted(true);
@@ -66,9 +62,7 @@ const CurrentOccupancy: React.FC<CurrentOccupancyProps> = ({
     };
 
     // Favorites-Filter
-    const displayLibs = showOnlyFavorites
-        ? libraries.filter((lib) => favorites.includes(lib.id))
-        : libraries;
+    const displayLibs = showOnlyFavorites ? libraries.filter((lib) => favorites.includes(lib.id)) : libraries;
 
     return (
         <div className="mb-8 animate-slideIn">
@@ -84,15 +78,11 @@ const CurrentOccupancy: React.FC<CurrentOccupancyProps> = ({
                     return (
                         <div
                             key={library.id}
-                            className="p-4 rounded-xl bg-white dark:bg-card border border-border transition-all-300 hover:shadow-md"
-                        >
+                            className="p-4 rounded-xl bg-white dark:bg-card border border-border transition-all-300 hover:shadow-md">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                    <div
-                                        className="w-3 h-3 rounded-full"
-                                        style={{ backgroundColor: library.color }}
-                                    />
-                                    <h3 className="font-medium">{library.name}</h3>
+                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: library.color }} />
+                                    <h3 className="font-medium">{getDisplayName(library.name)}</h3>
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <span className="text-sm font-medium">{cur.occupancy}%</span>
