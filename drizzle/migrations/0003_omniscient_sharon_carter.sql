@@ -1,0 +1,1 @@
+ALTER TABLE "CalendarEvent" ADD CONSTRAINT "calendar_event_name_start" UNIQUE("name","start");

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."EventType" ADD VALUE 'info';
