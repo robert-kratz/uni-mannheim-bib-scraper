@@ -21,7 +21,7 @@ type Props = {
 
 export default function IndexPage({ semesterPeriods }: Props) {
     const isMobile = useIsMobile();
-    const { date, changeDate } = useOccupancy();
+    const { date, loading } = useOccupancy();
 
     // Calendar state
     const [calendarDate, setCalendarDate] = useState<Date>(new Date(date));
@@ -86,7 +86,7 @@ export default function IndexPage({ semesterPeriods }: Props) {
                     setShowOnlyFavorites={setShowOnlyFavorites}
                 />
                 {/* Show current occupancy only if selected date is today */}
-                {isToday(date) && (
+                {isToday(date) && !loading && (
                     <CurrentOccupancy
                         libraries={libraries}
                         favorites={favorites}

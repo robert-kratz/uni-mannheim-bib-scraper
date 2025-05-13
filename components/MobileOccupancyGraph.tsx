@@ -282,7 +282,7 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
                                     tickMargin={5}
                                 />
                                 {/* Horizontal threshold line at 75% */}
-                                {isToday(data.date) && (
+                                {isToday(date) && (
                                     <ReferenceLine y={75} stroke="red" strokeDasharray="3 3" strokeWidth={1} />
                                 )}
                                 <Tooltip content={<MobileCustomTooltip />} />
