@@ -1,17 +1,17 @@
 import { AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
-    LineChart,
+    CartesianGrid,
+    Legend,
     Line,
+    LineChart,
+    ReferenceLine,
+    ResponsiveContainer,
+    Tooltip,
     XAxis,
     YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    Legend,
-    ReferenceLine,
 } from 'recharts';
-import { Library, DailyOccupancyData } from '@/utils/types';
-import { format, parseISO, isToday, isFuture, addDays } from 'date-fns';
+import { DailyOccupancyData, Library } from '@/utils/types';
+import { addDays, format, isFuture, isToday, parseISO } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 
@@ -45,11 +45,11 @@ const MobileCustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function MobileOccupancyGraph({
-    libraries,
-    data,
-    favorites,
-    showOnlyFavorites,
-}: MobileOccupancyGraphProps) {
+                                                 libraries,
+                                                 data,
+                                                 favorites,
+                                                 showOnlyFavorites,
+                                             }: MobileOccupancyGraphProps) {
     const selectedDay = data;
 
     const router = useRouter();
@@ -57,35 +57,35 @@ export default function MobileOccupancyGraph({
     // Prepare chart data - simplified for mobile
     const chartData = selectedDay
         ? (() => {
-              const result: any = [];
-              // Get the first library to determine time points
-              const firstLibraryId = Object.keys(selectedDay.occupancy)[0];
-              // For mobile, use fewer data points (hourly instead of every 10 minutes)
-              const timePoints = selectedDay.occupancy[firstLibraryId]
-                  .filter((point, index) => index % 6 === 0) // Every hour (every 6th point)
-                  .map((point) => point.time);
+            const result: any = [];
+            // Get the first library to determine time points
+            const firstLibraryId = Object.keys(selectedDay.occupancy)[0];
+            // For mobile, use fewer data points (hourly instead of every 10 minutes)
+            const timePoints = selectedDay.occupancy[firstLibraryId]
+                //.filter((point, index) => index % 6 === 0) // Every hour (every 6th point)
+                .map((point) => point.time);
 
-              // For each time point, gather all libraries' data
-              timePoints.forEach((time, timeIndex) => {
-                  const dataPoint: any = { time };
+            // For each time point, gather all libraries' data
+            timePoints.forEach((time, timeIndex) => {
+                const dataPoint: any = { time };
 
-                  // Add data for each library
-                  libraries.forEach((library) => {
-                      if (showOnlyFavorites && !favorites.includes(library.id)) return;
+                // Add data for each library
+                libraries.forEach((library) => {
+                    if (showOnlyFavorites && !favorites.includes(library.id)) return;
 
-                      const libraryData = selectedDay.occupancy[library.id][timeIndex * 6]; // Every hour
-                      if (libraryData) {
-                          dataPoint[library.id] = libraryData.occupancy;
-                          // We don't need predictions on mobile view for simplicity
-                          if (ENABLE_PREDICTION) dataPoint[`${library.id}-prediction`] = libraryData.prediction;
-                      }
-                  });
+                    const libraryData = selectedDay.occupancy[library.id][timeIndex]; // Every hour
+                    if (libraryData) {
+                        dataPoint[library.id] = libraryData.occupancy;
+                        // We don't need predictions on mobile view for simplicity
+                        if (ENABLE_PREDICTION) dataPoint[`${library.id}-prediction`] = libraryData.prediction;
+                    }
+                });
 
-                  result.push(dataPoint);
-              });
+                result.push(dataPoint);
+            });
 
-              return result;
-          })()
+            return result;
+        })()
         : [];
 
     const navigateBack = () => {
@@ -122,13 +122,43 @@ export default function MobileOccupancyGraph({
     // Determine which libraries to show
     const visibleLibraries = libraries.filter((lib) => !showOnlyFavorites || favorites.includes(lib.id));
 
+    // Direkt nach deinem chartData block einfügen:
+
     const scrapeFailed = (() => {
-        if (chartData.length === 0) return false;
-        const last = chartData[chartData.length - 1];
-        return visibleLibraries.every((lib) => {
-            const val = last[lib.id as keyof typeof last] as number | null | undefined;
-            return val === null || val === -1 || val === undefined;
+        if (!isToday(data.date)) return false;
+
+        // Wenn weniger als 3 Punkte vorliegen, kein Fehlschlag
+        if (chartData.length < 3) return false;
+
+        // Errechne aktuelle Minuten seit Mitternacht
+        const now = new Date();
+        const currentTotalMin = now.getHours() * 60 + now.getMinutes();
+
+        let lastIdx = -1;
+        chartData.forEach((pt: any, i: number) => {
+            const [h, m] = pt.time.split(':').map(Number);
+            const totalMin = h * 60 + m;
+            if (totalMin <= currentTotalMin) {
+                lastIdx = i;
+            }
         });
+
+        // Wenn weniger als 3 Einträge bis gerade vorhanden, kein Fehlschlag
+        if (lastIdx < 2) return false;
+
+        // Nimm genau die 3 letzten vor "now"
+        const lastThree = chartData.slice(lastIdx - 2, lastIdx + 1);
+
+        // Welche Libraries prüfen (Favorites-Filter beachten)
+        const libsToCheck = libraries.filter(lib => !showOnlyFavorites || favorites.includes(lib.id));
+
+        // True, wenn in ALLEN dieser drei Punkte für ALL libs kein valider Wert kommt
+        return lastThree.every((point: any) =>
+            libsToCheck.every(lib => {
+                const v = point[lib.id];
+                return v === null || v === undefined || v === -1;
+            }),
+        );
     })();
 
     return (
@@ -143,7 +173,8 @@ export default function MobileOccupancyGraph({
                 </div>
             )}
             {scrapeFailed && (
-                <div className="mb-4 flex items-start space-x-2 p-3 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 text-sm">
+                <div
+                    className="mb-4 flex items-start space-x-2 p-3 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 text-sm">
                     <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
                     <p>
                         Die aktuellsten Daten konnten nicht von der Website geladen werden. Sollte das Problem weiterhin
@@ -174,7 +205,8 @@ export default function MobileOccupancyGraph({
                     </button>
                 </div>
             </div>
-            <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-3 shadow-sm mb-6 animate-fadeIn">
+            <div
+                className="w-full bg-white dark:bg-card rounded-xl border border-border p-3 shadow-sm mb-6 animate-fadeIn">
                 <div className="flex sm:items-center sm:justify-between flex-col sm:flex-row mb-4 gap-2">
                     <h2 className="text-xl font-medium">Bibliotheksauslastung</h2>
                 </div>

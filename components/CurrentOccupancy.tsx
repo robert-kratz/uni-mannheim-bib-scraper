@@ -10,70 +10,65 @@ interface CurrentOccupancyProps {
     showOnlyFavorites: boolean;
 }
 
-const CurrentOccupancy = ({ libraries, data, favorites, showOnlyFavorites }: CurrentOccupancyProps) => {
-    // Get current time
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
+type Trend = 'up' | 'down' | 'stable';
+interface CurrentData {
+    occupancy: number;
+    trend: Trend;
+}
 
-    // Format current time to match data format (HH:MM)
-    const currentTimeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-
+const CurrentOccupancy: React.FC<CurrentOccupancyProps> = ({
+                                                               libraries,
+                                                               data,
+                                                               favorites,
+                                                               showOnlyFavorites,
+                                                           }) => {
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
         setMounted(true);
     }, []);
-    if (!mounted) return null; // oder Skeleton-Placeholder
+    if (!mounted) return null;
 
-    // Get current occupancy and trend for each library
-    const getCurrentOccupancyData = (libraryId: string) => {
-        const libraryData = data[libraryId];
-        if (!libraryData || libraryData.length === 0) return null;
+    const getCurrentOccupancyData = (libraryId: string): CurrentData | null => {
+        const libData = data[libraryId];
+        if (!libData || libData.length === 0) return null;
 
-        // Find the closest time data point
-        const sortedData = [...libraryData].sort((a, b) => {
-            const aDiff = Math.abs(timeToMinutes(a.time) - timeToMinutes(currentTimeString));
-            const bDiff = Math.abs(timeToMinutes(b.time) - timeToMinutes(currentTimeString));
-            return aDiff - bDiff;
-        });
+        // 1) Von hinten starten und ersten validen occupancy-Wert finden
+        let currentIdx = -1;
+        for (let i = libData.length - 1; i >= 0; i--) {
+            const occ = libData[i].occupancy;
+            if (occ != null && occ !== -1) {
+                currentIdx = i;
+                break;
+            }
+        }
+        if (currentIdx === -1) return null;
 
-        const currentData = sortedData[0];
+        const currentOcc = libData[currentIdx].occupancy as number;
 
-        // Get trend by comparing with previous data point if available
-        let trend: 'up' | 'down' | 'stable' = 'stable';
-        const currentIndex = libraryData.findIndex((d) => d.time === currentData.time);
-        if (currentIndex > 0) {
-            const prevOccupancy = libraryData[currentIndex - 1].occupancy;
-
-            if (currentData.occupancy === null || prevOccupancy === null) {
-                trend = 'stable';
-            } else if (currentData.occupancy > prevOccupancy) {
-                trend = 'up';
-            } else if (currentData.occupancy < prevOccupancy) {
-                trend = 'down';
+        // 2) Trend: vorherigen validen Punkt finden
+        let trend: Trend = 'stable';
+        for (let j = currentIdx - 1; j >= 0; j--) {
+            const prevOcc = libData[j].occupancy;
+            if (prevOcc != null && prevOcc !== -1) {
+                if (currentOcc > prevOcc) trend = 'up';
+                else if (currentOcc < prevOcc) trend = 'down';
+                break;
             }
         }
 
-        return {
-            occupancy: currentData.occupancy,
-            trend,
-        };
+        return { occupancy: currentOcc, trend };
     };
 
-    // Convert time string to minutes for easier comparison
-    const timeToMinutes = (time: string) => {
-        const [hours, minutes] = time.split(':').map(Number);
-        return hours * 60 + minutes;
-    };
-
-    const getOccupancyColor = (occupancy: number) => {
-        if (occupancy < 30) return 'bg-green-500';
-        if (occupancy < 70) return 'bg-amber-500';
+    const getOccupancyColor = (occ: number) => {
+        if (occ < 30) return 'bg-green-500';
+        if (occ < 70) return 'bg-amber-500';
         return 'bg-red-500';
     };
 
-    // Filter libraries if needed
-    const filteredLibraries = showOnlyFavorites ? libraries.filter((lib) => favorites.includes(lib.id)) : libraries;
+    // Favorites-Filter
+    const displayLibs = showOnlyFavorites
+        ? libraries.filter((lib) => favorites.includes(lib.id))
+        : libraries;
 
     return (
         <div className="mb-8 animate-slideIn">
@@ -82,35 +77,35 @@ const CurrentOccupancy = ({ libraries, data, favorites, showOnlyFavorites }: Cur
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredLibraries.map((library) => {
-                    const occupancyData = getCurrentOccupancyData(library.id);
-                    if (!occupancyData) return null;
+                {displayLibs.map((library) => {
+                    const cur = getCurrentOccupancyData(library.id);
+                    if (!cur) return null;
 
                     return (
                         <div
                             key={library.id}
-                            className="p-4 rounded-xl bg-white dark:bg-card border border-border transition-all-300 hover:shadow-md">
+                            className="p-4 rounded-xl bg-white dark:bg-card border border-border transition-all-300 hover:shadow-md"
+                        >
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: library.color }} />
+                                    <div
+                                        className="w-3 h-3 rounded-full"
+                                        style={{ backgroundColor: library.color }}
+                                    />
                                     <h3 className="font-medium">{library.name}</h3>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <span className="text-sm font-medium">{occupancyData.occupancy}%</span>
-                                    {occupancyData.trend === 'up' && <ArrowUp size={18} className="text-red-500" />}
-                                    {occupancyData.trend === 'stable' && (
-                                        <ArrowRight size={18} className="text-gray-500" />
-                                    )}
-                                    {occupancyData.trend === 'down' && (
-                                        <ArrowDown size={18} className="text-green-500" />
-                                    )}
+                                    <span className="text-sm font-medium">{cur.occupancy}%</span>
+                                    {cur.trend === 'up' && <ArrowUp size={18} className="text-red-500" />}
+                                    {cur.trend === 'stable' && <ArrowRight size={18} className="text-gray-500" />}
+                                    {cur.trend === 'down' && <ArrowDown size={18} className="text-green-500" />}
                                 </div>
                             </div>
 
                             <Progress
-                                value={occupancyData.occupancy}
+                                value={cur.occupancy}
                                 className="h-2"
-                                indicatorClassName={getOccupancyColor(occupancyData.occupancy || 0)}
+                                indicatorClassName={getOccupancyColor(cur.occupancy)}
                             />
                         </div>
                     );

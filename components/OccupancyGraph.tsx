@@ -125,12 +125,40 @@ export default function OccupancyGraph({ libraries, data, favorites, showOnlyFav
     const visibleLibraries = libraries.filter((lib) => !showOnlyFavorites || favorites.includes(lib.id));
 
     const scrapeFailed = (() => {
-        if (chartData.length === 0) return false;
-        const last = chartData[chartData.length - 1];
-        return visibleLibraries.every((lib) => {
-            const val = last[lib.id as keyof typeof last] as number | null | undefined;
-            return val === null || val === -1 || val === undefined;
+        if (!isToday(data.date)) return false;
+
+        // Wenn weniger als 3 Punkte vorliegen, kein Fehlschlag
+        if (chartData.length < 3) return false;
+
+        // Errechne aktuelle Minuten seit Mitternacht
+        const now = new Date();
+        const currentTotalMin = now.getHours() * 60 + now.getMinutes();
+
+        let lastIdx = -1;
+        chartData.forEach((pt: any, i: number) => {
+            const [h, m] = pt.time.split(':').map(Number);
+            const totalMin = h * 60 + m;
+            if (totalMin <= currentTotalMin) {
+                lastIdx = i;
+            }
         });
+
+        // Wenn weniger als 3 Einträge bis gerade vorhanden, kein Fehlschlag
+        if (lastIdx < 2) return false;
+
+        // Nimm genau die 3 letzten vor "now"
+        const lastThree = chartData.slice(lastIdx - 2, lastIdx + 1);
+
+        // Welche Libraries prüfen (Favorites-Filter beachten)
+        const libsToCheck = libraries.filter(lib => !showOnlyFavorites || favorites.includes(lib.id));
+
+        // True, wenn in ALLEN dieser drei Punkte für ALL libs kein valider Wert kommt
+        return lastThree.every((point: any) =>
+            libsToCheck.every(lib => {
+                const v = point[lib.id];
+                return v === null || v === undefined || v === -1;
+            }),
+        );
     })();
 
     if (isMobile) {

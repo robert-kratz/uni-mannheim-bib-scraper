@@ -16,7 +16,8 @@ export default function Navbar() {
         setMounted(true);
         const onScroll = () => {
             const y = window.scrollY;
-            setScrolled(y > 20);
+
+            setScrolled(y > 100);
             setVisible(y <= lastY);
             setLastY(y);
         };

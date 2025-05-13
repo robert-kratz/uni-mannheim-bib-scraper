@@ -24,7 +24,5 @@ export default async function DailyOccupancyPage({ searchParams }: { searchParam
         end: event.end ? event.end.toISOString().split('T')[0] : '',
     }));
 
-    console.log('Events:', events);
-
     return <IndexPage occupancyData={data} semesterPeriods={events} />;
 }
