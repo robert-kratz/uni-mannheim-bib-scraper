@@ -4,6 +4,8 @@ import './globals.css';
 import { ThemeProvider } from 'next-themes';
 import NProgressBar from '@/components/NProgressBar';
 import Head from 'next/head';
+import { Analytics } from '@vercel/analytics/next';
+
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -39,6 +41,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
             <NProgressBar />
             {children}
+            <Analytics />
         </ThemeProvider>
         </body>
         </html>
