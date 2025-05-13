@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import RefreshTimer from '@/components/RefreshTimer';
 import LibraryList from '@/components/LibraryList';
 import OccupancyGraph from '@/components/OccupancyGraph';
 import MobileOccupancyGraph from '@/components/MobileOccupancyGraph';
@@ -13,28 +13,26 @@ import { DailyOccupancyData, SemesterPeriod } from '@/utils/types';
 import { libraries } from '@/utils/constants';
 import Footer from '@/components/Footer';
 import { AlertTriangle } from 'lucide-react';
+import { useOccupancy } from '@/hooks/use-occupancy';
 
 type Props = {
-    occupancyData: DailyOccupancyData;
     semesterPeriods: SemesterPeriod[];
 };
 
-export default function IndexPage({ occupancyData, semesterPeriods }: Props) {
-    const searchParams = useSearchParams();
+export default function IndexPage({ semesterPeriods }: Props) {
     const isMobile = useIsMobile();
+    const { date, changeDate } = useOccupancy();
 
-    // Persisted graph date via URL
-    const todayStr = new Date().toISOString().split('T')[0];
-    const urlDate = searchParams.get('date') ?? todayStr;
+    // Calendar state
+    const [calendarDate, setCalendarDate] = useState<Date>(new Date(date));
 
-    // Calendar state (not in URL)
-    const [calendarDate, setCalendarDate] = useState<Date>(new Date());
-
+    // Favorites state
     const [favorites, setFavorites] = useState<string[]>(() => {
         if (typeof window === 'undefined') return ['bib-a3', 'bib-schloss'];
         const saved = localStorage.getItem('favorites');
         return saved ? JSON.parse(saved) : ['bib-a3', 'bib-schloss'];
     });
+
     const [showOnlyFavorites, setShowOnlyFavorites] = useState<boolean>(() => {
         if (typeof window === 'undefined') return false;
         const saved = localStorage.getItem('showOnlyFavorites');
@@ -42,16 +40,17 @@ export default function IndexPage({ occupancyData, semesterPeriods }: Props) {
     });
 
     // Check if selected date is today
-    const isToday = (date: Date): boolean => {
+    const isToday = (dateString: string): boolean => {
+        const selectedDate = new Date(dateString);
         const today = new Date();
         return (
-            date.getDate() === today.getDate() &&
-            date.getMonth() === today.getMonth() &&
-            date.getFullYear() === today.getFullYear()
+            selectedDate.getDate() === today.getDate() &&
+            selectedDate.getMonth() === today.getMonth() &&
+            selectedDate.getFullYear() === today.getFullYear()
         );
     };
 
-    // Persist preferences & apply theme
+    // Persist preferences
     useEffect(() => {
         localStorage.setItem('favorites', JSON.stringify(favorites));
         localStorage.setItem('showOnlyFavorites', JSON.stringify(showOnlyFavorites));
@@ -70,8 +69,14 @@ export default function IndexPage({ occupancyData, semesterPeriods }: Props) {
             <Navbar />
             <main className="container max-w-7xl mx-auto pt-24 px-4 flex-grow">
                 <div className="mb-8 animate-fadeIn">
-                    <h1 className="text-3xl sm:text-4xl font-bold mb-2">Uni Mannheim Bibliotheks Manager</h1>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                        <h1 className="text-3xl sm:text-4xl font-bold mb-2">Uni Mannheim Bibliotheks Manager</h1>
+                        <div className="hidden md:flex">
+                            <RefreshTimer className="self-start sm:self-auto" />
+                        </div>
+                    </div>
                     <p className="text-muted-foreground">Überblick über die Auslastung der Universitätsbibliotheken</p>
+                    <RefreshTimer className="self-start sm:self-auto block md:hidden" />
                 </div>
                 <LibraryList
                     libraries={libraries}
@@ -81,26 +86,19 @@ export default function IndexPage({ occupancyData, semesterPeriods }: Props) {
                     setShowOnlyFavorites={setShowOnlyFavorites}
                 />
                 {/* Show current occupancy only if selected date is today */}
-                {isToday(new Date(urlDate)) && (
+                {isToday(date) && (
                     <CurrentOccupancy
                         libraries={libraries}
-                        data={occupancyData?.occupancy || {}}
                         favorites={favorites}
                         showOnlyFavorites={showOnlyFavorites}
                     />
                 )}
                 {/* Desktop graph */}
-                <OccupancyGraph
-                    libraries={libraries}
-                    data={occupancyData}
-                    favorites={favorites}
-                    showOnlyFavorites={showOnlyFavorites}
-                />
+                <OccupancyGraph libraries={libraries} favorites={favorites} showOnlyFavorites={showOnlyFavorites} />
                 {/* Mobile graph */}
                 {isMobile && (
                     <MobileOccupancyGraph
                         libraries={libraries}
-                        data={occupancyData}
                         favorites={favorites}
                         showOnlyFavorites={showOnlyFavorites}
                     />

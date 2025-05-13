@@ -3,10 +3,10 @@ import { Library, OccupancyDataPoint } from '@/utils/types';
 import { Progress } from '@/components/ui/progress';
 import { ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
 import { getDisplayName } from '@/lib/libraryNames';
+import { useOccupancy } from '@/hooks/use-occupancy';
 
 interface CurrentOccupancyProps {
     libraries: Library[];
-    data: Record<string, OccupancyDataPoint[]>;
     favorites: string[];
     showOnlyFavorites: boolean;
 }
@@ -17,8 +17,12 @@ interface CurrentData {
     trend: Trend;
 }
 
-const CurrentOccupancy: React.FC<CurrentOccupancyProps> = ({ libraries, data, favorites, showOnlyFavorites }) => {
+const CurrentOccupancy: React.FC<CurrentOccupancyProps> = ({ libraries, favorites, showOnlyFavorites }) => {
     const [mounted, setMounted] = useState(false);
+    const { occupancyData } = useOccupancy();
+
+    const data = occupancyData?.occupancy;
+
     useEffect(() => {
         setMounted(true);
     }, []);

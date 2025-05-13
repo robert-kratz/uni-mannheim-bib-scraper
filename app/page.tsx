@@ -3,6 +3,7 @@ import IndexPage from '@/components/pages/IndexPage';
 import { DailyOccupancyData, EventType, SemesterPeriod } from '@/utils/types';
 import { getDailyOccupancy } from '@/lib/occupancy';
 import { getCalendarEvents } from '@/lib/calendar';
+import { OccupancyProvider } from '@/hooks/use-occupancy';
 
 export const metadata = {
     title: 'Uni Mannheim - Bibliotheksbelegung',
@@ -24,5 +25,9 @@ export default async function DailyOccupancyPage({ searchParams }: { searchParam
         end: event.end ? event.end.toISOString().split('T')[0] : '',
     }));
 
-    return <IndexPage occupancyData={data} semesterPeriods={events} />;
+    return (
+        <OccupancyProvider initialData={data} initialDate={date}>
+            <IndexPage semesterPeriods={events} />
+        </OccupancyProvider>
+    );
 }

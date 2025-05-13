@@ -1,4 +1,5 @@
 import { Github, GithubIcon, LucideGithub } from 'lucide-react';
+import Script from 'next/script';
 
 export default function Footer() {
     return (

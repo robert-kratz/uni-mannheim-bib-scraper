@@ -1,5 +1,6 @@
 // app/api/bib/[date]/route.ts
 export const runtime = 'nodejs';
+export const revalidate = 300;
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getDailyOccupancy } from '@/lib/occupancy';
@@ -23,7 +24,7 @@ export async function GET(
 
     // 2) Daten holen
     try {
-        const data = await getDailyOccupancy(date);
+        const data = await getDailyOccupancy(date, 48, 138);
         return NextResponse.json(data);
     } catch (err) {
         console.error('getDailyOccupancy failed:', err);
