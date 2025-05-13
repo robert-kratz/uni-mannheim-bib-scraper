@@ -8,3 +8,7 @@ This project provides an overview of the utilization of the University of Mannhe
 2.  Install dependencies: `npm install`
 3.  Run the development server: `npm run dev`
 4.  Open your browser and navigate to `http://localhost:3000`
+
+# Author
+
+- [Robert Julian Kratz](https://rjks.us)
