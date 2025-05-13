@@ -80,13 +80,6 @@ export default function IndexPage({ occupancyData, semesterPeriods }: Props) {
                     showOnlyFavorites={showOnlyFavorites}
                     setShowOnlyFavorites={setShowOnlyFavorites}
                 />
-                {/* Desktop graph */}
-                <OccupancyGraph
-                    libraries={libraries}
-                    data={occupancyData}
-                    favorites={favorites}
-                    showOnlyFavorites={showOnlyFavorites}
-                />
                 {/* Show current occupancy only if selected date is today */}
                 {isToday(new Date(urlDate)) && (
                     <CurrentOccupancy
@@ -96,6 +89,13 @@ export default function IndexPage({ occupancyData, semesterPeriods }: Props) {
                         showOnlyFavorites={showOnlyFavorites}
                     />
                 )}
+                {/* Desktop graph */}
+                <OccupancyGraph
+                    libraries={libraries}
+                    data={occupancyData}
+                    favorites={favorites}
+                    showOnlyFavorites={showOnlyFavorites}
+                />
                 {/* Mobile graph */}
                 {isMobile && (
                     <MobileOccupancyGraph
