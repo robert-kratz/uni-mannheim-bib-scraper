@@ -33,7 +33,7 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                     <h1 className="text-xl font-medium">
-                        <span className="font-bold">bib</span>.rjks.us
+                        <span className="font-bold">bib2</span>.rjks.us
                     </h1>
                     <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">Beta</span>
                 </div>
