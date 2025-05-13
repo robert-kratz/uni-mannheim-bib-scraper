@@ -19,7 +19,6 @@ const SemesterBadge: React.FC<SemesterBadgeProps> = ({ semesterPeriods }) => {
 
         if (todayEvents.length > 0) {
             const currentEvent = todayEvents[0];
-            console.log('Current Event:', currentEvent);
             return currentEvent.name;
         }
 

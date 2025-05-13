@@ -53,9 +53,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites }: OccupancyGraphProps) {
     const router = useRouter();
     const { occupancyData: data, date, changeDate, loading } = useOccupancy();
-    const isMobile = useIsMobile();
 
     // Animation state
+    const [mounted, setMounted] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [chartOpacity, setChartOpacity] = useState(1);
     const [chartData, setChartData] = useState<any[]>([]);
@@ -64,6 +64,7 @@ export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites
     // Process chart data
     useEffect(() => {
         if (!data) return;
+        setMounted(true);
 
         // Start animation sequence
         const animateDataChange = async () => {
@@ -195,12 +196,10 @@ export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites
         );
     })();
 
-    if (isMobile) {
-        return null;
-    }
+    if ((!mounted && loading) || !mounted) return null;
 
     return (
-        <>
+        <div className="w-full mb-8 animate-fadeIn delay-900 min-h-0 hidden md:block">
             {data && !isToday(data.date) && (
                 <div className="flex items-center justify-end mb-4 w-full">
                     <button
@@ -229,7 +228,7 @@ export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites
                     </p>
                 </div>
             )}
-            <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-4 shadow-sm mb-8">
+            <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-4 shadow-sm mb-8 min-h-0">
                 <div className="flex sm:items-center sm:justify-between flex-col sm:flex-row mb-4 gap-2">
                     <h2 className="text-xl font-medium">Bibliotheksauslastung</h2>
                     <div className="flex items-center space-x-2">
@@ -261,15 +260,16 @@ export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites
                     </div>
                 </div>
 
-                <div className="h-[24rem] w-full transition-opacity duration-300" style={{ opacity: chartOpacity }}>
+                <div
+                    className="h-[24rem] w-full transition-opacity duration-300"
+                    style={{ opacity: chartOpacity, height: 350 }}>
                     {loading && (
                         <div className="h-full w-full flex items-center justify-center">
                             <div className="h-8 w-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin"></div>
                         </div>
                     )}
-
                     {!loading && (
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minHeight="300px">
                             <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                                 <XAxis
@@ -335,6 +335,6 @@ export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites
                     )}
                 </div>
             </div>
-        </>
+        </div>
     );
 }

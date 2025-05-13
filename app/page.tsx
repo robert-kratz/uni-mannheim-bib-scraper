@@ -12,7 +12,16 @@ export const metadata = {
 
 export default async function DailyOccupancyPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
     // date als queryParam lesen
-    const date = (await searchParams).date ?? new Date().toISOString().split('T')[0];
+    let date = (await searchParams).date ?? new Date().toISOString().split('T')[0];
+
+    //validate date, if not valid, set to today
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+        date = new Date().toISOString().split('T')[0];
+    } else {
+        date = parsedDate.toISOString().split('T')[0];
+    }
+
     const data: DailyOccupancyData = await getDailyOccupancy(date, 48, 138);
 
     const calendarEvents = (await getCalendarEvents()) || [];

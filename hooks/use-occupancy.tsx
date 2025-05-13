@@ -12,6 +12,8 @@ interface OccupancyContextType {
     changeDate: (newDate: string) => Promise<void>;
 }
 
+const REFRESH_INTERVAL = 180; // 2 minutes in seconds
+
 const OccupancyContext = createContext<OccupancyContextType | undefined>(undefined);
 
 interface OccupancyProviderProps {
@@ -23,8 +25,8 @@ interface OccupancyProviderProps {
 export const OccupancyProvider: React.FC<OccupancyProviderProps> = ({ children, initialData, initialDate }) => {
     const [occupancyData, setOccupancyData] = useState<DailyOccupancyData>(initialData);
     const [date, setDate] = useState<string>(initialDate);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [nextRefreshIn, setNextRefreshIn] = useState<number>(120); // 2 minutes in seconds
+    const [loading, setLoading] = useState<boolean>(true);
+    const [nextRefreshIn, setNextRefreshIn] = useState<number>(REFRESH_INTERVAL); // 2 minutes in seconds
 
     const fetchOccupancyData = useCallback(async (dateToFetch: string) => {
         const start = new Date();
@@ -54,10 +56,14 @@ export const OccupancyProvider: React.FC<OccupancyProviderProps> = ({ children, 
         }
     }, []);
 
+    useEffect(() => {
+        if (occupancyData) setLoading(false);
+    }, []);
+
     // Function to manually refresh data
     const refreshData = useCallback(async () => {
         await fetchOccupancyData(date);
-        setNextRefreshIn(120); // Reset countdown timer
+        setNextRefreshIn(REFRESH_INTERVAL); // Reset countdown timer
     }, [fetchOccupancyData, date]);
 
     // Function to change date and fetch data for that date
@@ -67,7 +73,7 @@ export const OccupancyProvider: React.FC<OccupancyProviderProps> = ({ children, 
                 setDate(newDate);
                 console.log('Changing date to:', newDate);
                 await fetchOccupancyData(newDate);
-                setNextRefreshIn(120); // Reset countdown timer
+                setNextRefreshIn(REFRESH_INTERVAL); // Reset countdown timer
             }
         },
         [fetchOccupancyData, date]
@@ -80,7 +86,7 @@ export const OccupancyProvider: React.FC<OccupancyProviderProps> = ({ children, 
                 if (prev <= 1) {
                     // When countdown reaches 0, refresh data and reset timer
                     refreshData();
-                    return 120;
+                    return REFRESH_INTERVAL;
                 }
                 return prev - 1;
             });
@@ -93,7 +99,7 @@ export const OccupancyProvider: React.FC<OccupancyProviderProps> = ({ children, 
     useEffect(() => {
         const autoRefreshTimer = setInterval(() => {
             refreshData();
-        }, 120000); // 2 minutes in milliseconds
+        }, REFRESH_INTERVAL * 1000);
 
         return () => clearInterval(autoRefreshTimer);
     }, [refreshData]);

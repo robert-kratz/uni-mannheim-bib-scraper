@@ -49,11 +49,9 @@ const MobileCustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFavorites }: MobileOccupancyGraphProps) {
-    const router = useRouter();
     const { occupancyData: data, date, changeDate, loading } = useOccupancy();
-    const isMobile = useIsMobile();
-
     // Animation state
+    const [mounted, setMounted] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [chartOpacity, setChartOpacity] = useState(1);
     const [chartData, setChartData] = useState<any[]>([]);
@@ -62,6 +60,7 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
     // Process chart data
     useEffect(() => {
         if (!data) return;
+        setMounted(true);
 
         // Start animation sequence
         const animateDataChange = async () => {
@@ -194,8 +193,10 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
         );
     })();
 
+    if ((!mounted && loading) || !mounted) return null;
+
     return (
-        <>
+        <div className="w-full mb-8 animate-fadeIn delay-900 min-h-0">
             {!isToday(data.date) && (
                 <div className="flex items-center justify-end mb-4 w-full">
                     <button
@@ -247,19 +248,19 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
                     </button>
                 </div>
             </div>
-            <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-3 shadow-sm mb-6 animate-fadeIn">
+            <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-3 shadow-sm mb-6 min-h-0">
                 <div className="flex sm:items-center sm:justify-between flex-col sm:flex-row mb-4 gap-2">
                     <h2 className="text-xl font-medium">Bibliotheksauslastung</h2>
                 </div>
 
-                <div className="h-[22rem] w-full transition-opacity duration-300" style={{ opacity: chartOpacity }}>
+                <div className="h-[22rem] w-full" style={{ opacity: chartOpacity, height: 350 }}>
                     {loading && (
                         <div className="h-full w-full flex items-center justify-center">
                             <div className="h-8 w-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin"></div>
                         </div>
                     )}
                     {!loading && (
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minHeight="300px">
                             <LineChart data={chartData} margin={{ top: 5, right: 5, left: -15, bottom: 15 }}>
                                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                                 <XAxis
@@ -281,7 +282,9 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
                                     tickMargin={5}
                                 />
                                 {/* Horizontal threshold line at 75% */}
-                                <ReferenceLine y={75} stroke="red" strokeDasharray="3 3" strokeWidth={1} />
+                                {isToday(data.date) && (
+                                    <ReferenceLine y={75} stroke="red" strokeDasharray="3 3" strokeWidth={1} />
+                                )}
                                 <Tooltip content={<MobileCustomTooltip />} />
                                 <Legend
                                     wrapperStyle={{ fontSize: '10px', marginTop: '10px' }}
@@ -327,6 +330,6 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
                     )}
                 </div>
             </div>
-        </>
+        </div>
     );
 }

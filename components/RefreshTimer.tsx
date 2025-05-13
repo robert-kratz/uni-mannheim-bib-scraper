@@ -26,10 +26,10 @@ export default function RefreshTimer({ className }: RefreshTimerProps) {
             <button
                 onClick={() => refreshData()}
                 disabled={loading}
-                className="p-1.5 rounded-full hover:bg-accent transition-colors hover:text-white"
+                className="p-1.5 rounded-full hover:bg-accent transition-colors "
                 aria-label="Daten aktualisieren">
                 <RefreshCw
-                    className={cn('h-4 w-4 ', loading ? 'animate-spin text-primary' : 'text-muted-foreground')}
+                    className={cn('h-4 w-4 ', loading ? 'animate-spin text-muted-foreground' : 'text-muted-foreground')}
                 />
             </button>
         </div>
