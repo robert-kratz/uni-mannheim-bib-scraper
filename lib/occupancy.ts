@@ -87,6 +87,41 @@ export async function getDailyOccupancy(
         return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     };
 
+    /* -------------------- Interpolation für Datenlücken -------------------- */
+    const interpolateGaps = (dataMap: Map<number, number>): Map<number, number> => {
+        if (dataMap.size <= 1) return dataMap; // Keine Interpolation möglich bei 0 oder 1 Datenpunkt
+
+        const result = new Map(dataMap);
+
+        // Sortiere die vorhandenen Chunks
+        const existingChunks = Array.from(dataMap.keys()).sort((a, b) => a - b);
+
+        // Finde die erste und letzte Chunk mit Daten
+        const firstChunk = existingChunks[0];
+        const lastChunk = existingChunks[existingChunks.length - 1];
+
+        // Interpoliere nur zwischen dem ersten und letzten existierenden Datenpunkt
+        for (let i = 0; i < existingChunks.length - 1; i++) {
+            const currentChunk = existingChunks[i];
+            const nextChunk = existingChunks[i + 1];
+
+            // Überprüfe, ob es eine Lücke gibt
+            if (nextChunk - currentChunk > 1) {
+                const currentValue = dataMap.get(currentChunk)!;
+                const nextValue = dataMap.get(nextChunk)!;
+
+                // Fülle die Lücke mit interpolierten Werten
+                for (let gap = currentChunk + 1; gap < nextChunk; gap++) {
+                    // Berechne den Median (Durchschnitt) zwischen den beiden benachbarten Punkten
+                    const interpolatedValue = Math.round((currentValue + nextValue) / 2);
+                    result.set(gap, interpolatedValue);
+                }
+            }
+        }
+
+        return result;
+    };
+
     /* ----------------------- Result pro Bibliothek ------------------------- */
     const occupancy: Record<string, OccupancyDataPoint[]> = {};
 
@@ -94,7 +129,8 @@ export async function getDailyOccupancy(
     Array.from(libsSet)
         .sort((a, b) => ALL_LIBS.indexOf(a as any) - ALL_LIBS.indexOf(b as any))
         .forEach((lib) => {
-            const oMap = occMap.get(lib) ?? new Map();
+            // Holen und interpolieren der Occupancy-Daten
+            const oMap = occMap.has(lib) ? interpolateGaps(occMap.get(lib)!) : new Map();
             const pMap = predMap.get(lib) ?? new Map();
 
             const points: OccupancyDataPoint[] = [];
