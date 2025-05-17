@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
 import { de } from 'date-fns/locale';
 import {
@@ -14,18 +14,14 @@ import {
     Moon,
     Sun,
     Wind,
-    ChevronsDown,
-    ChevronsUp,
 } from 'lucide-react';
 import { DateTime } from 'luxon';
 import { useWeather } from '@/hooks/use-weather';
 import type { WeatherData } from '@/lib/weather';
 
 /* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
+/*  Symbol-Helpers                                                    */
 /* ------------------------------------------------------------------ */
-
-/** 🔄 Map met.no `symbol_code` → German label */
 const LABEL_DE: Record<string, string> = {
     clearsky_day: 'Sonnig',
     clearsky_night: 'Klar',
@@ -35,17 +31,28 @@ const LABEL_DE: Record<string, string> = {
     partlycloudy_night: 'Teilweise bewölkt',
     cloudy: 'Bewölkt',
     lightrain: 'Nieselregen',
-    rain: 'Regnerisch',
+    rain: 'Regen',
     heavyrain: 'Starker Regen',
     lightsnow: 'Leichter Schneefall',
     snow: 'Schneefall',
     fog: 'Nebel',
 };
 
-/** ⌚ Berlin-Zeit für einen ISO-String */
-const berlinDate = (iso: string) => DateTime.fromISO(iso).setZone('Europe/Berlin');
+const PRIORITY = [
+    'thunder', // includes thunder/lightning
+    'heavyrain',
+    'rain',
+    'lightrain',
+    'snow',
+    'lightsnow',
+    'cloudy',
+    'partlycloudy',
+    'clearsky',
+    'fair',
+];
 
-/** 🌗 Tag-/Nacht-abhängige Icon-Wahl */
+const berlin = (iso: string) => DateTime.fromISO(iso).setZone('Europe/Berlin');
+
 const iconFor = (code: string, hour: number) => {
     const night = hour >= 21 || hour < 6 || code.includes('_night');
 
@@ -73,67 +80,77 @@ const iconFor = (code: string, hour: number) => {
 const germanLabel = (code: string) => LABEL_DE[code] ?? code;
 
 /* ------------------------------------------------------------------ */
-/*  Component                                                          */
+/*  Component                                                         */
 /* ------------------------------------------------------------------ */
-const WeatherForecast = () => {
+export default function WeatherForecast() {
     const { weatherData, date, loading } = useWeather();
-
-    /* ------------------------- early exits -------------------------- */
-    if (!weatherData?.length) return null;
 
     const selectedDate = date ? parseISO(date) : new Date();
     const formattedDate = format(selectedDate, 'EEEE, d. MMMM yyyy', { locale: de });
-
-    const today = new Date();
-    const isToday =
-        today.getFullYear() === selectedDate.getFullYear() &&
-        today.getMonth() === selectedDate.getMonth() &&
-        today.getDate() === selectedDate.getDate();
+    const isToday = selectedDate.toDateString() === new Date().toDateString();
     const dateStatus = isToday ? 'heute' : 'am ausgewählten Tag';
 
-    /* ------------------  TIME WINDOWS  ------------------------------ */
-    const berlinNow = DateTime.now().setZone('Europe/Berlin');
+    /* ---------- next 12 h in 3-Stunden-Fenstern (mobile) ---------- */
+    const now = DateTime.now().setZone('Europe/Berlin').startOf('hour');
+    const MOBILE_WINDOWS = 4; // 4 × 3 h = 12 h
 
-    // Mobile: initially show next 12 h
-    const mobileEnd = berlinNow.plus({ hours: 12 });
+    const mobileRows = useMemo(() => {
+        const rows: WeatherData[] = [];
 
-    // Desktop: show full next 24 h
-    const desktopStart = isToday
-        ? berlinNow
-        : DateTime.fromJSDate(selectedDate).setZone('Europe/Berlin').startOf('day');
-    const desktopEnd = desktopStart.plus({ hours: 24 });
+        for (let i = 0; i < MOBILE_WINDOWS; i++) {
+            const winStart = now.plus({ hours: i * 3 });
+            const winEnd = winStart.plus({ hours: 3 });
 
-    /* ------------------  FILTER + SORT DATA  ------------------------ */
-    const byTime = (a: WeatherData, b: WeatherData) => new Date(a.time).getTime() - new Date(b.time).getTime();
+            const slice = weatherData.filter((d) => {
+                const dt = berlin(d.time);
+                return dt >= winStart && dt < winEnd;
+            });
 
-    // rows for mobile (full 24 h, we'll slice later)
-    const allRows = [...weatherData].sort(byTime);
+            if (!slice.length) continue;
 
-    const initialMobileRows = allRows.filter((d) => {
-        const dt = berlinDate(d.time);
-        return dt >= berlinNow && dt <= mobileEnd;
-    });
+            // --- pick "worst" condition by PRIORITY ---
+            let chosen = slice[0];
+            slice.forEach((s) => {
+                const pri = PRIORITY.findIndex((p) => s.condition.includes(p));
+                const curr = PRIORITY.findIndex((p) => chosen.condition.includes(p));
+                if (pri !== -1 && (curr === -1 || pri < curr)) chosen = s;
+            });
 
-    const desktopSlots = allRows.filter((d) => {
-        const dt = berlinDate(d.time);
-        return dt >= desktopStart && dt < desktopEnd;
-    });
+            // avg temp / wind within window
+            const avg = <K extends keyof WeatherData>(k: K) =>
+                slice.reduce((sum, v) => sum + (v[k] as number), 0) / slice.length;
 
-    /* ----------------------  MOBILE STATE  -------------------------- */
-    const [expanded, setExpanded] = useState(false);
-    const mobileRows = expanded ? desktopSlots : initialMobileRows;
+            rows.push({
+                ...chosen,
+                time: winStart.toISO()!,
+                temperature: avg('temperature'),
+                windSpeed: avg('windSpeed'),
+            });
+        }
+        return rows;
+    }, [weatherData, now]);
 
-    /* ------------------------- render helpers ----------------------- */
+    /* ---------- desktop slots (24 h) ------------------------------ */
+    const deskStart = isToday ? now : DateTime.fromJSDate(selectedDate).setZone('Europe/Berlin').startOf('day');
+    const deskEnd = deskStart.plus({ hours: 24 });
+    const desktopSlots = weatherData
+        .filter((d) => {
+            const dt = berlin(d.time);
+            return dt >= deskStart && dt < deskEnd;
+        })
+        .sort((a, b) => berlin(a.time).toMillis() - berlin(b.time).toMillis());
+
+    /* ---------- render helpers ------------------------------------ */
     const TableRow = (d: WeatherData) => {
-        const dt = berlinDate(d.time);
+        const dt = berlin(d.time);
         const hour = dt.hour;
-        const timeLabel = dt.toFormat('HH:mm');
+        const label = dt.toFormat('HH:mm');
 
         return (
             <div
                 key={d.time}
-                className="grid grid-cols-[60px_40px_1fr_auto] items-center gap-2 bg-secondary/20 dark:bg-secondary/10 rounded-lg px-3 py-2 hover:bg-secondary/30 dark:hover:bg-secondary/20">
-                <span className="text-sm font-medium text-muted-foreground">{timeLabel}</span>
+                className="grid grid-cols-[60px_40px_1fr_auto] items-center gap-2 bg-secondary/20 dark:bg-secondary/10 rounded-lg px-3 py-2">
+                <span className="text-sm font-medium text-muted-foreground">{label}</span>
 
                 <span className="flex items-center justify-center">{iconFor(d.condition, hour)}</span>
 
@@ -143,116 +160,84 @@ const WeatherForecast = () => {
                 </div>
 
                 <span className="flex items-center gap-1 text-xs text-muted-foreground justify-end">
-                    <Wind size={14} /> {d.windSpeed.toFixed(0)} m/s
+                    <Wind size={14} /> {Math.round(d.windSpeed)} m/s
                 </span>
             </div>
         );
     };
 
-    const SlimHourBox = (d: WeatherData) => {
-        const dt = berlinDate(d.time);
+    const SlimBox = (d: WeatherData) => {
+        const dt = berlin(d.time);
         const hour = dt.hour;
-        const timeLabel = dt.toFormat('HH');
-
         return (
             <div
                 key={d.time}
-                className="flex flex-col items-center justify-between space-y-2 py-4 bg-secondary/20 dark:bg-secondary/10 rounded-lg w-16 shrink-0 select-none">
-                <span className="text-xs text-muted-foreground min-w-10">{timeLabel} Uhr</span>
+                className="flex flex-col items-center space-y-2 py-4 w-16 bg-secondary/20 dark:bg-secondary/10 rounded-lg shrink-0">
+                <span className="text-xs text-muted-foreground">{dt.toFormat('HH')} h</span>
                 {iconFor(d.condition, hour)}
                 <span className="text-sm font-medium">{Math.round(d.temperature)}°</span>
             </div>
         );
     };
 
-    /* ------------------ Drag-to-Scroll logic ----------------------- */
-    const sliderRef = useRef<HTMLDivElement | null>(null);
-    const [isGrab, setGrab] = useState(false);
+    /* ---------- drag-scroll (desktop) ----------------------------- */
+    const sliderRef = useRef<HTMLDivElement>(null);
+    const [grab, setGrab] = useState(false);
 
-    const onPointerDown = (e: React.PointerEvent) => {
-        const slider = sliderRef.current;
-        if (!slider) return;
+    const startDrag = (e: React.PointerEvent) => {
+        const s = sliderRef.current;
+        if (!s) return;
         setGrab(true);
-        slider.setPointerCapture(e.pointerId);
-        (slider as any)._startX = e.clientX;
-        (slider as any)._scrollLeft = slider.scrollLeft;
+        s.setPointerCapture(e.pointerId);
+        (s as any)._x = e.clientX;
+        (s as any)._scroll = s.scrollLeft;
     };
-
-    const onPointerMove = (e: React.PointerEvent) => {
-        const slider = sliderRef.current;
-        if (!slider || !isGrab) return;
-        const dx = e.clientX - (slider as any)._startX;
-        slider.scrollLeft = (slider as any)._scrollLeft - dx;
+    const moveDrag = (e: React.PointerEvent) => {
+        const s = sliderRef.current;
+        if (!s || !grab) return;
+        s.scrollLeft = (s as any)._scroll - (e.clientX - (s as any)._x);
     };
-
     const endDrag = (e: React.PointerEvent) => {
-        const slider = sliderRef.current;
-        if (!slider) return;
-        slider.releasePointerCapture(e.pointerId);
+        sliderRef.current?.releasePointerCapture(e.pointerId);
         setGrab(false);
     };
 
-    if (loading) return null;
+    if (!weatherData?.length || loading) return null;
 
-    /* ------------------------------ JSX ----------------------------- */
+    /* ---------- JSX ----------------------------------------------- */
     return (
-        <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-4 shadow-sm mb-8 animate-fadeIn transition-all duration-1000">
-            {/* Header */}
-            <header className="pb-2 flex items-center justify-between">
+        <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-4 shadow-sm mb-8">
+            {/* header */}
+            <header className="flex justify-between pb-2">
                 <h2 className="text-xl font-medium">Wetter für {dateStatus}</h2>
                 <p className="text-sm text-muted-foreground">{formattedDate}</p>
             </header>
 
-            {/* Mobile (<md): tabellarische Liste */}
-            <div className="flex flex-col gap-2 md:hidden">
-                {mobileRows.map((d) => TableRow(d))}
-                {/* Toggle button */}
-                <button
-                    onClick={() => setExpanded((v) => !v)}
-                    className="mt-1 flex items-center justify-center gap-1 text-sm text-primary hover:underline">
-                    {expanded ? (
-                        <>
-                            Weniger anzeigen <ChevronsUp size={16} />
-                        </>
-                    ) : (
-                        <>
-                            Mehr anzeigen <ChevronsDown size={16} />
-                        </>
-                    )}
-                </button>
-            </div>
+            {/* mobile list (4× 3 h) */}
+            <div className="flex flex-col gap-2 md:hidden">{mobileRows.map(TableRow)}</div>
 
-            {/* Desktop (≥md): horizontale Leiste 24 h – drag-to-scroll */}
-            {desktopSlots.length > 0 && (
+            {/* desktop slider */}
+            {!!desktopSlots.length && (
                 <div className="hidden md:block overflow-x-auto">
                     <div
                         ref={sliderRef}
-                        onPointerDown={onPointerDown}
-                        onPointerMove={onPointerMove}
+                        onPointerDown={startDrag}
+                        onPointerMove={moveDrag}
                         onPointerUp={endDrag}
                         onPointerLeave={endDrag}
-                        className={`flex gap-2 min-w-max cursor-${isGrab ? 'grabbing' : 'grab'}`}>
-                        {desktopSlots.map((d) => SlimHourBox(d))}
+                        className={`flex gap-2 min-w-max cursor-${grab ? 'grabbing' : 'grab'}`}>
+                        {desktopSlots.map(SlimBox)}
                     </div>
                 </div>
             )}
 
-            <div className="mt-2 text-xs text-muted-foreground text-center">
-                <a
-                    href="https://api.met.no/"
-                    target="_blank"
-                    className="mt-4 text-sm text-muted-foreground text-center">
-                    Wettervorhersage · Standort Universität&nbsp;Mannheim
-                </a>
-            </div>
-
-            {loading && (
-                <p className="mt-2 text-xs text-muted-foreground text-center animate-pulse">
-                    Daten werden aktualisiert …
-                </p>
-            )}
+            <p className="mt-3 text-xs text-muted-foreground text-center">
+                Quelle&nbsp;
+                <a href="https://api.met.no" target="_blank" className="underline hover:no-underline">
+                    api.met.no
+                </a>{' '}
+                · Standort Universität Mannheim
+            </p>
         </div>
     );
-};
-
-export default WeatherForecast;
+}
