@@ -136,6 +136,18 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
         locale: de,
     });
 
+    const legendHeight = (amount: number) => {
+        const base = showPred ? 2 * amount : amount;
+
+        if (base <= 1) return 20;
+        if (base <= 3) return 30;
+        if (base <= 5) return 40;
+        if (base <= 7) return 50;
+        if (base <= 9) return 60;
+
+        return 70;
+    };
+
     /* ---------- render ------------------------------------------- */
     return (
         <div className="w-full mb-8">
@@ -172,7 +184,7 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
 
             {/* Chart Card */}
             <div className="bg-white dark:bg-card border border-border rounded-xl p-3 shadow-sm">
-                <div className="h-[20rem]">
+                <div className="h-[24rem]">
                     {loading ? (
                         <Spinner />
                     ) : (
@@ -191,7 +203,7 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
                                     iconSize={8}
                                     iconType="circle"
                                     verticalAlign="bottom"
-                                    height={20}
+                                    height={legendHeight(visibleLibs.length)}
                                 />
 
                                 {visibleLibs.map((lib) => (
