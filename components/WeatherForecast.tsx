@@ -209,8 +209,8 @@ export default function WeatherForecast() {
         <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-4 shadow-sm mb-8">
             {/* header */}
             <header className="flex justify-between pb-2">
-                <h2 className="text-xl font-medium">Wetter für {dateStatus}</h2>
-                <p className="text-sm text-muted-foreground">{formattedDate}</p>
+                <h2 className="text-xl font-medium">Wettervorhersage Mannheim</h2>
+                <p className="text-sm text-muted-foreground hidden md:block">{formattedDate}</p>
             </header>
 
             {/* mobile list (4× 3 h) */}
