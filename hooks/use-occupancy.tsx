@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { DailyOccupancyData } from '@/utils/types';
+import type { DailyOccupancyData } from '@/utils/types';
 
 interface OccupancyContextType {
     occupancyData: DailyOccupancyData;
@@ -12,99 +12,119 @@ interface OccupancyContextType {
     changeDate: (newDate: string) => Promise<void>;
 }
 
-const REFRESH_INTERVAL = 180; // 2 minutes in seconds
+const REFRESH_INTERVAL = 180; // sec
 
+/* ------------------------------------------------------------------ */
+/*  Context                                                            */
+/* ------------------------------------------------------------------ */
 const OccupancyContext = createContext<OccupancyContextType | undefined>(undefined);
 
-interface OccupancyProviderProps {
+interface Props {
     children: ReactNode;
+    /** Bereits auf dem Server zusammengeführte Live- **UND** Prognosedaten   */
     initialData: DailyOccupancyData;
     initialDate: string;
 }
 
-export const OccupancyProvider: React.FC<OccupancyProviderProps> = ({ children, initialData, initialDate }) => {
-    const [occupancyData, setOccupancyData] = useState<DailyOccupancyData>(initialData);
-    const [date, setDate] = useState<string>(initialDate);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [nextRefreshIn, setNextRefreshIn] = useState<number>(REFRESH_INTERVAL); // 2 minutes in seconds
+/* ------------------------------------------------------------------ */
+/*  Merge-Routine: Live-Datensatz + Prognose-Datensatz                 */
+/*  Beide Datenquellen enthalten **verschiedene** Bibliotheks-Keys:    */
+/*    • Live  →  "A3", "A5", …                                         */
+/*    • Prognose → "A3-pred", …                                        */
+/*  Darum reicht ein einfaches Zusammenführen der Objekt-Properties.   */
+/* ------------------------------------------------------------------ */
+const mergeData = (live: DailyOccupancyData, pred: DailyOccupancyData): DailyOccupancyData => {
+    const merged: DailyOccupancyData = { date: live.date, occupancy: {} };
 
-    const fetchOccupancyData = useCallback(async (dateToFetch: string) => {
-        const start = new Date();
+    Object.entries(live.occupancy).forEach(([lib, points]) => (merged.occupancy[lib] = points));
+    Object.entries(pred.occupancy).forEach(([lib, points]) => (merged.occupancy[lib + `-pred`] = points));
+
+    return merged;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Provider                                                           */
+/* ------------------------------------------------------------------ */
+export const OccupancyProvider: React.FC<Props> = ({ children, initialData, initialDate }) => {
+    const [occupancyData, setOccupancyData] = useState<DailyOccupancyData>(initialData);
+    const [date, setDate] = useState(initialDate);
+    const [loading, setLoading] = useState(true);
+    const [nextRefreshIn, setNextRefreshIn] = useState(REFRESH_INTERVAL);
+
+    /* ---------------- Fetch helper (live + prediction parallel) -------- */
+    const fetchData = useCallback(async (day: string) => {
+        const t0 = performance.now();
         try {
             setLoading(true);
-            const response = await fetch(`/api/bib/${dateToFetch}`);
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch occupancy data');
-            }
+            const [liveResp, predResp] = await Promise.all([
+                fetch(`/api/bib/${day}`),
+                fetch(`/api/bib/${day}/predict`),
+            ]);
+            if (!liveResp.ok || !predResp.ok) throw new Error('fetch error');
 
-            const data = await response.json();
-            setOccupancyData(data);
-            return data;
-        } catch (error) {
-            console.error('Error fetching occupancy data:', error);
+            const [live, pred]: [DailyOccupancyData, DailyOccupancyData] = await Promise.all([
+                liveResp.json(),
+                predResp.json(),
+            ]);
+
+            const merged = mergeData(live, pred);
+            setOccupancyData(merged);
+            return merged;
+        } catch (err) {
+            console.error('Error fetching occupancy / prediction:', err);
             return null;
         } finally {
-            //check if load has been doen in less then 200ms, if yes, make sure to wait 200ms
-            const end = new Date();
-            const loadTime = end.getTime() - start.getTime();
-            if (loadTime < 200) {
-                await new Promise((resolve) => setTimeout(resolve, 200 - loadTime));
-            }
-
+            const elapsed = performance.now() - t0;
+            if (elapsed < 200) await new Promise((r) => setTimeout(r, 200 - elapsed));
             setLoading(false);
         }
     }, []);
 
+    /* first client-side refresh (to make sure cache is fresh) */
     useEffect(() => {
-        if (occupancyData) setLoading(false);
-    }, []);
+        void fetchData(initialDate);
+    }, [fetchData, initialDate]);
 
-    // Function to manually refresh data
+    /* manual refresh --------------------------------------------------- */
     const refreshData = useCallback(async () => {
-        await fetchOccupancyData(date);
-        setNextRefreshIn(REFRESH_INTERVAL); // Reset countdown timer
-    }, [fetchOccupancyData, date]);
+        await fetchData(date);
+        setNextRefreshIn(REFRESH_INTERVAL);
+    }, [fetchData, date]);
 
-    // Function to change date and fetch data for that date
+    /* change date ------------------------------------------------------ */
     const changeDate = useCallback(
         async (newDate: string) => {
-            if (newDate !== date) {
-                setDate(newDate);
-                console.log('Changing date to:', newDate);
-                await fetchOccupancyData(newDate);
-                setNextRefreshIn(REFRESH_INTERVAL); // Reset countdown timer
-            }
+            if (newDate === date) return;
+            setDate(newDate);
+            await fetchData(newDate);
+            setNextRefreshIn(REFRESH_INTERVAL);
         },
-        [fetchOccupancyData, date]
+        [fetchData, date]
     );
 
-    // Setup countdown timer
+    /* countdown tick --------------------------------------------------- */
     useEffect(() => {
-        const timer = setInterval(() => {
-            setNextRefreshIn((prev) => {
-                if (prev <= 1) {
-                    // When countdown reaches 0, refresh data and reset timer
+        const id = setInterval(() => {
+            setNextRefreshIn((s) => {
+                if (s <= 1) {
                     refreshData();
                     return REFRESH_INTERVAL;
                 }
-                return prev - 1;
+                return s - 1;
             });
-        }, 1000);
-
-        return () => clearInterval(timer);
+        }, 1_000);
+        return () => clearInterval(id);
     }, [refreshData]);
 
-    // Auto-refresh data every 2 minutes
+    /* auto-refresh ----------------------------------------------------- */
     useEffect(() => {
-        const autoRefreshTimer = setInterval(() => {
-            refreshData();
-        }, REFRESH_INTERVAL * 1000);
-
-        return () => clearInterval(autoRefreshTimer);
+        const id = setInterval(refreshData, REFRESH_INTERVAL * 1_000);
+        return () => clearInterval(id);
     }, [refreshData]);
 
-    const value = {
+    /* ------------------------------------------------------------------ */
+    const value: OccupancyContextType = {
         occupancyData,
         date,
         loading,
@@ -116,12 +136,11 @@ export const OccupancyProvider: React.FC<OccupancyProviderProps> = ({ children, 
     return <OccupancyContext.Provider value={value}>{children}</OccupancyContext.Provider>;
 };
 
+/* ------------------------------------------------------------------ */
+/*  Hook                                                               */
+/* ------------------------------------------------------------------ */
 export const useOccupancy = (): OccupancyContextType => {
-    const context = useContext(OccupancyContext);
-
-    if (context === undefined) {
-        throw new Error('useOccupancy must be used within an OccupancyProvider');
-    }
-
-    return context;
+    const ctx = useContext(OccupancyContext);
+    if (!ctx) throw new Error('useOccupancy must be used within an OccupancyProvider');
+    return ctx;
 };

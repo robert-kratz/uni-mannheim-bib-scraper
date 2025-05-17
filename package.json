@@ -1,6 +1,6 @@
 {
   "name": "uni-mannheim-bib-scraper",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Robert Julian Kratz",
   "private": true,
   "scripts": {
@@ -33,10 +33,12 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^2.15.3",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/luxon": "^3.6.2",
     "@types/node": "^20",
     "@types/nprogress": "^0.2.3",
     "@types/pg": "^8.15.1",

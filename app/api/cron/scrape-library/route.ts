@@ -29,16 +29,12 @@ export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
     const key = request.headers.get('x-api-key');
-    console.log('Cron job called with key:', key);
-    console.log('API_KEY:', API_KEY);
     if (!key || key !== API_KEY) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
         const scraped: BibDataRow[] = await fetchScrapedData(SCRAPE_URL);
-
-        console.log('Scraped data:', scraped);
 
         let inserted = 0;
         for (const row of scraped) {

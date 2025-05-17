@@ -14,6 +14,7 @@ import { libraries } from '@/utils/constants';
 import Footer from '@/components/Footer';
 import { AlertTriangle } from 'lucide-react';
 import { useOccupancy } from '@/hooks/use-occupancy';
+import WeatherForecast from '@/components/WeatherForecast';
 
 type Props = {
     semesterPeriods: SemesterPeriod[];
@@ -103,6 +104,7 @@ export default function IndexPage({ semesterPeriods }: Props) {
                         showOnlyFavorites={showOnlyFavorites}
                     />
                 )}
+                <WeatherForecast />
 
                 <Calendar
                     semesterPeriods={semesterPeriods}
