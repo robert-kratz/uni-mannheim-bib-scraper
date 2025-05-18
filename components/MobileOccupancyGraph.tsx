@@ -99,18 +99,21 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
         const times = src.occupancy[first].map((p) => p.time);
 
         /* Für Mobile nur jede Stunde zeigen → index % 6 === 0 */
-        return times
-            .filter((_, i) => i % 6 === 0)
-            .map((time, idxH) => {
-                const absIdx = idxH * 6;
-                const row: any = { time };
-                visibleLibs.forEach((lib) => {
-                    row[lib.id] = src.occupancy[lib.id]?.[absIdx]?.occupancy;
-                    const pred = src.occupancy[`${lib.id}-pred`]?.[absIdx];
-                    if (pred?.prediction !== undefined) row[`${lib.id}-pred`] = pred.prediction;
-                });
-                return row;
-            });
+        return (
+            times
+                //.filter((_, i) => i % 2 === 0)
+                .map((time, idxH) => {
+                    //const absIdx = idxH * 2;
+                    const absIdx = idxH;
+                    const row: any = { time };
+                    visibleLibs.forEach((lib) => {
+                        row[lib.id] = src.occupancy[lib.id]?.[absIdx]?.occupancy;
+                        const pred = src.occupancy[`${lib.id}-pred`]?.[absIdx];
+                        if (pred?.prediction !== undefined) row[`${lib.id}-pred`] = pred.prediction;
+                    });
+                    return row;
+                })
+        );
     };
 
     /* ---------- navigation helpers ------------------------------- */
