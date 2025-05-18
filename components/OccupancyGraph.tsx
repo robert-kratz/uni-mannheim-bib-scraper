@@ -64,9 +64,9 @@ export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites
 
     /* ---------- Toggle for predictions (LocalStorage) ----------- */
     const [showPred, setShowPred] = useState<boolean>(() => {
-        if (typeof window === 'undefined') return true;
+        if (typeof window === 'undefined') return false;
         const v = localStorage.getItem('showPredictions');
-        return v ? JSON.parse(v) : true;
+        return v ? JSON.parse(v) : false;
     });
     const [mounted, setMounted] = useState(false);
     useEffect(() => {

@@ -94,9 +94,9 @@ export default function WeatherForecast() {
     const mobileRows = useMemo(() => {
         const out: WeatherData[] = [];
 
-        for (let w = 0; w < 4; w++) {
-            const winStart = now.plus({ hours: 3 * w });
-            const winEnd = winStart.plus({ hours: 3 });
+        for (let w = 0; w < 8; w++) {
+            const winStart = now.plus({ hours: 2 * w });
+            const winEnd = winStart.plus({ hours: 2 });
 
             const slice = weatherData.filter((d) => {
                 const dt = berlin(d.time);

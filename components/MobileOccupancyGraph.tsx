@@ -62,9 +62,9 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
 
     /* ---------- prediction toggle (LS) ---------------------------- */
     const [showPred, setShowPred] = useState<boolean>(() => {
-        if (typeof window === 'undefined') return true;
+        if (typeof window === 'undefined') return false;
         const v = localStorage.getItem('showPredictions');
-        return v ? JSON.parse(v) : true;
+        return v ? JSON.parse(v) : false;
     });
     useEffect(() => {
         localStorage.setItem('showPredictions', JSON.stringify(showPred));
