@@ -20,8 +20,8 @@ services:
       - "traefik.http.routers.bib-app-http.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
     networks:
-      - traefik-public
+      - dokploy-network
 
 networks:
-  traefik-public:
+  dokploy-network:
     external: true
