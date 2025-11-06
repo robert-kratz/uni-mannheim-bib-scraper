@@ -57,7 +57,8 @@ jobs:
                   labels: ${{ steps.meta.outputs.labels }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
-                  platforms: linux/amd64,linux/arm64
+                  platforms: linux/amd64
+                  # Removed linux/arm64 to speed up builds - add back if needed for ARM servers
 
             - name: Image digest
-              run: echo ${{ steps.meta.outputs.digest }}
+              run: echo ${{ steps.meta.outputs.tags }}
