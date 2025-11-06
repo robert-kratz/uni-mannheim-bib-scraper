@@ -61,4 +61,4 @@ jobs:
                   # Removed linux/arm64 to speed up builds - add back if needed for ARM servers
 
             - name: Image digest
-              run: echo ${{ steps.meta.outputs.tags }}
+              run: echo "${{ steps.meta.outputs.tags }}"
