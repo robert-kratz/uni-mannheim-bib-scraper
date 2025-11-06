@@ -6,7 +6,6 @@ import NProgressBar from '@/components/NProgressBar';
 import Head from 'next/head';
 import { Analytics } from '@vercel/analytics/next';
 
-
 const geistSans = Geist({
     variable: '--font-geist-sans',
     subsets: ['latin'],
@@ -23,27 +22,38 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
+    children,
+}: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
         <html lang="en" suppressHydrationWarning={true}>
-        <Head>
-            <link rel="manifest" href="/app/manifest.ts" />
-            <meta name="theme-color" content="#4f46e5" />
-            {/* Apple-PWA Unterstützung */}
-            <meta name="apple-mobile-web-app-capable" content="yes" />
-            <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-            <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-        </Head>
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased `}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-            <NProgressBar />
-            {children}
-            <Analytics />
-        </ThemeProvider>
-        </body>
+            <Head>
+                <link rel="manifest" href="/app/manifest.ts" />
+                <meta name="theme-color" content="#4f46e5" />
+                {/* Apple-PWA Unterstützung */}
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+                <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+                {/* Plausible Analytics */}
+                <script
+                    defer
+                    data-domain="bib2.rjks.us"
+                    src="https://analytics.rjks.us/js/script.file-downloads.hash.outbound-links.pageview-props.tagged-events.js"
+                />
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }`,
+                    }}
+                />
+            </Head>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased `}>
+                <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+                    <NProgressBar />
+                    {children}
+                    <Analytics />
+                </ThemeProvider>
+            </body>
         </html>
     );
 }
