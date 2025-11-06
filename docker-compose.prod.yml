@@ -7,13 +7,16 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
       - API_KEY=${API_KEY}
+      - PORT=3040
+    expose:
+      - "3040"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.bib-app.rule=Host(`bib2.rjks.us`)"
       - "traefik.http.routers.bib-app.entrypoints=websecure"
       - "traefik.http.routers.bib-app.tls=true"
       - "traefik.http.routers.bib-app.tls.certresolver=letsencrypt"
-      - "traefik.http.services.bib-app.loadbalancer.server.port=3000"
+      - "traefik.http.services.bib-app.loadbalancer.server.port=3040"
       # Optional: HTTP to HTTPS redirect
       - "traefik.http.routers.bib-app-http.rule=Host(`bib2.rjks.us`)"
       - "traefik.http.routers.bib-app-http.entrypoints=web"
