@@ -5,7 +5,6 @@ import { getDailyOccupancy } from '@/lib/occupancy';
 import { getPrediction } from '@/lib/prediction';
 import { getCalendarEvents } from '@/lib/calendar';
 import { OccupancyProvider } from '@/hooks/use-occupancy';
-import { getWeather } from '@/lib/weather';
 import { WeatherProvider } from '@/hooks/use-weather';
 
 export const metadata = {
@@ -48,9 +47,8 @@ export default async function DailyOccupancyPage({ searchParams }: Search) {
     if (isNaN(dateObj.getTime())) dateObj = new Date();
     const dateStr = dateObj.toISOString().slice(0, 10);
 
-    /* 2 · Daten parallel laden */
-    const [weather, liveData, predRaw, calendar] = await Promise.all([
-        getWeather(dateStr),
+    /* 2 · Daten parallel laden (ohne Weather - wird client-side geladen) */
+    const [liveData, predRaw, calendar] = await Promise.all([
         getDailyOccupancy(dateStr, 48, 138), // 08:00–23:00
         getPrediction(dateStr, 48, 138),
         getCalendarEvents(),
@@ -74,10 +72,10 @@ export default async function DailyOccupancyPage({ searchParams }: Search) {
             end: e.end ? e.end.toISOString().slice(0, 10) : '',
         })) ?? [];
 
-    /* 5 · Render mit Providern */
+    /* 5 · Render mit Providern (Weather wird client-side geladen) */
     return (
         <OccupancyProvider initialData={merged} initialDate={dateStr}>
-            <WeatherProvider initialData={weather} initialDate={dateStr}>
+            <WeatherProvider initialData={null} initialDate={dateStr}>
                 <IndexPage semesterPeriods={semesterPeriods} />
             </WeatherProvider>
         </OccupancyProvider>

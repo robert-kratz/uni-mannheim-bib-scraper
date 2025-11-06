@@ -24,19 +24,36 @@ const WeatherContext = createContext<WeatherContextType | undefined>(undefined);
 /* ------------------------------------------------------------------ */
 interface WeatherProviderProps {
     children: ReactNode;
-    initialData: WeatherData[]; // ← comes from your page-level loader
+    initialData: WeatherData[] | null; // ← kann jetzt null sein für client-side loading
     initialDate: string; // e.g. "2025-05-17"
 }
 
 export const WeatherProvider: React.FC<WeatherProviderProps> = ({ children, initialData, initialDate }) => {
-    const [weatherData, setWeatherData] = useState<WeatherData[]>(initialData);
+    const [weatherData, setWeatherData] = useState<WeatherData[]>(initialData || []);
     const [date, setDate] = useState<string>(initialDate);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(!initialData || initialData.length === 0);
+
+    /* --------------------------- Client-side fetch wenn keine initialData --------------------------- */
+    useEffect(() => {
+        if (initialData === null || initialData.length === 0) {
+            setLoading(true);
+            fetch(`/api/weather/${initialDate}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    setWeatherData(data.weather || []);
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    console.error('Failed to fetch weather:', err);
+                    setLoading(false);
+                });
+        }
+    }, [initialData, initialDate]);
 
     /* --------------------------- effects --------------------------- */
-    // mark initial load as done
+    // mark initial load as done (nur wenn initialData vorhanden war)
     useEffect(() => {
-        if (initialData.length) setLoading(false);
+        if (initialData && initialData.length) setLoading(false);
     }, [initialData]);
 
     /* --------------------------- context value --------------------------- */
