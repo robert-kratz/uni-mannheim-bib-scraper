@@ -3,8 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from 'next-themes';
 import NProgressBar from '@/components/NProgressBar';
-import Head from 'next/head';
-import { Analytics } from '@vercel/analytics/next';
+import Script from 'next/script';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -28,30 +27,32 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning={true}>
-            <Head>
+            <head>
                 <link rel="manifest" href="/app/manifest.ts" />
                 <meta name="theme-color" content="#4f46e5" />
                 {/* Apple-PWA Unterstützung */}
                 <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
                 <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+            </head>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased `}>
                 {/* Plausible Analytics */}
-                <script
+                <Script
                     defer
                     data-domain="bib2.rjks.us"
                     src="https://analytics.rjks.us/js/script.file-downloads.hash.outbound-links.pageview-props.tagged-events.js"
+                    strategy="afterInteractive"
                 />
-                <script
+                <Script
+                    id="plausible-init"
+                    strategy="afterInteractive"
                     dangerouslySetInnerHTML={{
                         __html: `window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }`,
                     }}
                 />
-            </Head>
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased `}>
                 <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
                     <NProgressBar />
                     {children}
-                    <Analytics />
                 </ThemeProvider>
             </body>
         </html>
