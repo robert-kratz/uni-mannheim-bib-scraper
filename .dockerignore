@@ -1,0 +1,53 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Testing
+coverage
+
+# Next.js
+.next/
+out/
+build
+dist
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+*.log
+
+# Local env files
+.env*.local
+.env
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+README.md
+*.md
+
+# Drizzle migrations (optional - remove if needed in container)
+drizzle/migrations

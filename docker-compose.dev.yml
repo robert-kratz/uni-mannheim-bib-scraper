@@ -1,0 +1,20 @@
+# Development docker-compose with hot reload
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - "3040:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=${DATABASE_URL}
+      - API_KEY=${API_KEY}
+    volumes:
+      # Mount source code for hot reload
+      - ./:/app
+      - /app/node_modules
+      - /app/.next
+    stdin_open: true
+    tty: true

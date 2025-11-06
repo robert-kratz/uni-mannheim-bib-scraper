@@ -1,0 +1,27 @@
+# Production docker-compose with Traefik labels for Dockploy
+services:
+  app:
+    image: ghcr.io/robert-kratz/uni-mannheim-bib-scraper:latest
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - API_KEY=${API_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bib-app.rule=Host(`bib2.rjks.us`)"
+      - "traefik.http.routers.bib-app.entrypoints=websecure"
+      - "traefik.http.routers.bib-app.tls=true"
+      - "traefik.http.routers.bib-app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bib-app.loadbalancer.server.port=3000"
+      # Optional: HTTP to HTTPS redirect
+      - "traefik.http.routers.bib-app-http.rule=Host(`bib2.rjks.us`)"
+      - "traefik.http.routers.bib-app-http.entrypoints=web"
+      - "traefik.http.routers.bib-app-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    networks:
+      - traefik-public
+
+networks:
+  traefik-public:
+    external: true

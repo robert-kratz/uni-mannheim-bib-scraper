@@ -1,0 +1,22 @@
+# Development Dockerfile for Next.js 15 with hot reload
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies for development
+RUN apk add --no-cache libc6-compat
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Expose port 3000 for Next.js
+EXPOSE 3000
+
+# Start development server with Turbopack
+CMD ["npm", "run", "dev"]
