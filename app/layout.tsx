@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from 'next-themes';
 import NProgressBar from '@/components/NProgressBar';
+import CookieConsent from '@/components/CookieConsent';
 import Script from 'next/script';
 
 const geistSans = Geist({
@@ -53,6 +54,7 @@ export default function RootLayout({
                 <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
                     <NProgressBar />
                     {children}
+                    <CookieConsent />
                 </ThemeProvider>
             </body>
         </html>

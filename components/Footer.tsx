@@ -9,15 +9,25 @@ export default function Footer() {
                     <p className="text-sm text-muted-foreground">
                         © {new Date().getFullYear()}
                         {' Made by '}
-                        <a href="https://github.com/robert-kratz" className="text-accent hover:underline">
+                        <a
+                            href="https://github.com/robert-kratz"
+                            target="_blank"
+                            className="text-accent hover:underline">
                             Robert Julian Kratz
                         </a>{' '}
                         &{' '}
-                        <a href="https://github.com/its-gil" className="text-accent hover:underline">
+                        <a href="https://github.com/its-gil" target="_blank" className="text-accent hover:underline">
                             Virgil Baclanov
                         </a>
                     </p>
                     <div className="flex items-center gap-4">
+                        <a
+                            href="https://www.rjks.us/de/legal-notice"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                            Impressum
+                        </a>
                         <a
                             href="https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/"
                             target="_blank"
