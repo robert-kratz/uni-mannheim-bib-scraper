@@ -7,15 +7,11 @@ import { getDailyOccupancy } from '@/lib/occupancy';
 
 export async function GET(
     req: NextRequest,
-    {
-        params,
-        searchParams,
-    }: {
+    context: {
         params: Promise<{ date: string }>;
-        searchParams: Record<string, string | string[] | undefined>;
     }
 ) {
-    const { date } = await params;
+    const { date } = await context.params;
 
     // 1) Format-Validation
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
