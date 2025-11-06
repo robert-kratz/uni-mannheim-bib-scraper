@@ -94,23 +94,28 @@ export async function fetchScrapedData(url: string): Promise<BibDataRow[]> {
         .toArray()
         .map((elem) => {
             try {
-                // Name extrahieren & normalisieren
-                const rawName = $(elem).find('td:nth-child(2) h4 a').text().trim();
+                const rawName = $(elem)
+                    .find('td:nth-child(2) h4 a')
+                    .text()
+                    .trim();
                 const name = normalizeName(rawName);
 
-                // Prozent oder 0
-                const statusText = $(elem).find('.available-seats-table-status span').text().trim();
-                const percentage = statusText.includes('%') ? parseInt(statusText.replace('%', ''), 10) : 0;
+                const rawText = $(elem)
+                    .find('.available-seats-table-status span[aria-hidden="true"]')
+                    .first()
+                    .text();
+                const digitsOnly = rawText.replace(/\D/g, '');
+                const percentage = digitsOnly ? parseInt(digitsOnly, 10) : 0;
 
-                // Chunk basierend auf Berlin-Zeit
                 const chunk = computeChunk(hour, minute);
 
                 return { percentage, name, year, month, day, chunk, iat, ttl };
             } catch {
-                // Im Fehlerfall: occupancy = 0, aber sonst gleiche Meta-Daten
                 return { percentage: 0, name: '', year, month, day, chunk: 0, iat, ttl };
             }
         });
+
+    console.log(`Scraped ${rows.length} rows from ${url}`);
 
     return rows;
 }

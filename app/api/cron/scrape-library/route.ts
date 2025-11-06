@@ -33,6 +33,9 @@ export async function GET(request: NextRequest) {
     try {
         const scraped: BibDataRow[] = await fetchScrapedData(SCRAPE_URL);
 
+        console.log('Scraped data:', scraped.length, 'rows');
+        console.log(scraped);
+
         let inserted = 0;
         for (const row of scraped) {
             // 3) Filter: nur erlaubte Bibliotheken & valid row.name
