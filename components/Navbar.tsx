@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { analytics } from '@/lib/analytics';
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
@@ -11,6 +12,12 @@ export default function Navbar() {
     const [mounted, setMounted] = useState(false);
 
     const { theme, setTheme } = useTheme();
+
+    const handleThemeToggle = () => {
+        const newTheme = theme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+        analytics.trackThemeChange(newTheme as 'light' | 'dark');
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -48,7 +55,7 @@ export default function Navbar() {
                 {/* Theme-Toggle nur nach Mount */}
                 {mounted && (
                     <button
-                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                        onClick={handleThemeToggle}
                         className="p-2 rounded-full bg-secondary/50 hover:bg-secondary transition duration-200"
                         aria-label={theme === 'light' ? 'Dark Mode an' : 'Light Mode an'}>
                         {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}

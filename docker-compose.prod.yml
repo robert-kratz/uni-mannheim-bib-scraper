@@ -2,6 +2,7 @@
 services:
   app:
     image: ghcr.io/robert-kratz/uni-mannheim-bib-scraper:latest
+    pull_policy: always
     restart: unless-stopped
     environment:
       - NODE_ENV=production

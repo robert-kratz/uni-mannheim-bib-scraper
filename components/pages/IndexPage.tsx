@@ -15,6 +15,8 @@ import Footer from '@/components/Footer';
 import { AlertTriangle } from 'lucide-react';
 import { useOccupancy } from '@/hooks/use-occupancy';
 import WeatherForecast from '@/components/WeatherForecast';
+import { analytics } from '@/lib/analytics';
+import { usePWAInstall } from '@/hooks/use-pwa-install';
 
 type Props = {
     semesterPeriods: SemesterPeriod[];
@@ -23,6 +25,7 @@ type Props = {
 export default function IndexPage({ semesterPeriods }: Props) {
     const isMobile = useIsMobile();
     const { date, loading } = useOccupancy();
+    const { isInstallable, promptInstall } = usePWAInstall();
 
     // Calendar state
     const [calendarDate, setCalendarDate] = useState<Date>(new Date(date));
@@ -57,10 +60,30 @@ export default function IndexPage({ semesterPeriods }: Props) {
         localStorage.setItem('showOnlyFavorites', JSON.stringify(showOnlyFavorites));
     }, [favorites, showOnlyFavorites]);
 
+    // Track PWA usage and device type on mount
+    useEffect(() => {
+        analytics.trackPWAUsage();
+        analytics.trackDeviceType();
+    }, []);
+
+    // Track show only favorites toggle
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            analytics.trackShowOnlyFavorites(showOnlyFavorites);
+        }
+    }, [showOnlyFavorites]);
+
     const toggleFavorite = (id: string) => {
         setFavorites((prev) => {
             const updated = prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id];
             if (updated.length === 0) setShowOnlyFavorites(false);
+
+            // Track favorite toggle
+            const library = libraries.find((lib) => lib.id === id);
+            if (library) {
+                analytics.trackFavoriteToggle(id, !prev.includes(id));
+            }
+
             return updated;
         });
     };

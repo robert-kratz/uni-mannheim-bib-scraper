@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { format, parseISO, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { SemesterPeriod } from '@/utils/types';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { analytics } from '@/lib/analytics';
 
 // Import sub-components
 import CalendarHeader from './calendar/CalendarHeader';
@@ -31,6 +32,13 @@ const Calendar = ({ semesterPeriods, selectedDate, onSelectDate }: CalendarProps
     // Navigate to previous/next month
     const navigateMonth = (direction: 'prev' | 'next') => {
         setCurrentMonth(addMonths(currentMonth, direction === 'prev' ? -1 : 1));
+        analytics.trackCalendarInteraction('month_change');
+    };
+
+    // Handle date selection with tracking
+    const handleDateSelect = (date: Date) => {
+        onSelectDate(date);
+        analytics.trackDateChange(format(date, 'yyyy-MM-dd'), 'calendar');
     };
 
     // Generate calendar data for 12 months (current + 11 future months)
@@ -106,7 +114,7 @@ const Calendar = ({ semesterPeriods, selectedDate, onSelectDate }: CalendarProps
                                     days={days}
                                     startDayOfWeek={startDayOfWeek}
                                     selectedDate={selectedDate}
-                                    onSelectDate={onSelectDate}
+                                    onSelectDate={handleDateSelect}
                                     getDayColor={generateDayColor}
                                 />
                             </div>
