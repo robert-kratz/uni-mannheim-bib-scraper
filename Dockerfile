@@ -20,6 +20,11 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Set dummy environment variables for build (not used, but prevents build errors)
+# Real values will be provided at runtime
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+ENV API_KEY="dummy-build-key"
+
 # Build application
 RUN npm run build
 

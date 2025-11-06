@@ -33,7 +33,12 @@ export async function GET(
     /* ---------- 2 · Vorhersagedaten holen ------------------------------ */
     try {
         const data = await getPrediction(date, 48, 138); // 08:00 – 23:00
-        return NextResponse.json(data, { status: 200 });
+
+        // Cache-Control Headers setzen
+        const response = NextResponse.json(data, { status: 200 });
+        response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+
+        return response;
     } catch (err) {
         console.error('getPrediction failed:', err);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });

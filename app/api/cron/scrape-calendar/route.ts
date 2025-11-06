@@ -7,15 +7,17 @@ import { fetchCalendarEvents, CalendarEventRow } from '@/lib/scraper';
 import { CalendarEvent } from '@/drizzle/schema';
 import { db } from '@/drizzle';
 
-const API_KEY = process.env.API_KEY;
 const CALENDAR_URL = 'https://www.uni-mannheim.de/studium/termine/semesterzeiten#c117059';
-
-if (!API_KEY) throw new Error('API_KEY missing');
-if (!CALENDAR_URL) throw new Error('CALENDAR_URL missing');
 
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
+    const API_KEY = process.env.API_KEY;
+
+    if (!API_KEY) {
+        return NextResponse.json({ error: 'API_KEY not configured' }, { status: 500 });
+    }
+
     // Auth
     if (req.headers.get('x-api-key') !== API_KEY) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

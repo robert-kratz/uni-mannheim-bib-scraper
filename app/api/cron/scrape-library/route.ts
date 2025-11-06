@@ -7,17 +7,8 @@ import { BibData } from '@/drizzle/schema';
 import { db } from '@/drizzle';
 import { ALLOWED_LIBS } from '@/utils/constants';
 
-const API_KEY = process.env.API_KEY;
-
 const SCRAPE_URL = 'https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/';
 //const SCRAPE_URL = ('https://web.archive.org/web/20250409175544/https://www.bib.uni-mannheim.de/standorte/freie-sitzplaetze/'); # Only for testing
-
-if (!API_KEY) {
-    throw new Error('API_KEY is not set in your environment');
-}
-if (!SCRAPE_URL) {
-    throw new Error('SCRAPE_URL is not set in your environment');
-}
 
 function computeTTL(iat: Date): Date {
     const t = new Date(iat);
@@ -28,6 +19,12 @@ function computeTTL(iat: Date): Date {
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
+    const API_KEY = process.env.API_KEY;
+
+    if (!API_KEY) {
+        return NextResponse.json({ error: 'API_KEY not configured' }, { status: 500 });
+    }
+
     const key = request.headers.get('x-api-key');
     if (!key || key !== API_KEY) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

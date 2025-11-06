@@ -1,8 +1,11 @@
 {
   "name": "uni-mannheim-bib-scraper",
-  "version": "0.4.0",
-  "author": "Robert Julian Kratz",
-  "private": true,
+  "version": "0.3.0",
+  "author": "Robert Julian Kratz <https://github.com/robert-kratz>",
+  "contributors": [
+    "Virgil Baclanov <https://github.com/its-gil>"
+  ],
+  "private": false,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "npm run drizzle:generate && next build",
