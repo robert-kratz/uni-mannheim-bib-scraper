@@ -2,11 +2,7 @@ name: Build and Push Docker Image
 
 on:
     push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
+        branches: [main]
     workflow_dispatch:
 
 env:
@@ -16,16 +12,15 @@ env:
 jobs:
     build-and-push:
         runs-on: ubuntu-latest
+
         permissions:
             contents: read
             packages: write
+            deployments: write
 
         steps:
-            - name: Checkout repository
+            - name: Checkout
               uses: actions/checkout@v4
-
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
 
             - name: Log in to GitHub Container Registry
               uses: docker/login-action@v3
@@ -34,31 +29,43 @@ jobs:
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Extract metadata (tags, labels) for Docker
+            - name: Extract metadata
               id: meta
               uses: docker/metadata-action@v5
               with:
                   images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
                   tags: |
-                      type=ref,event=branch
-                      type=ref,event=pr
-                      type=semver,pattern={{version}}
-                      type=semver,pattern={{major}}.{{minor}}
-                      type=sha,prefix={{branch}}-
+                      type=sha
                       type=raw,value=latest,enable={{is_default_branch}}
 
-            - name: Build and push Docker image
-              uses: docker/build-push-action@v5
+            - name: Build and push
+              uses: docker/build-push-action@v6
               with:
                   context: .
-                  file: ./Dockerfile
-                  push: ${{ github.event_name != 'pull_request' }}
+                  push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
-                  cache-from: type=gha
-                  cache-to: type=gha,mode=max
-                  platforms: linux/amd64
-                  # Removed linux/arm64 to speed up builds - add back if needed for ARM servers
+
+            - name: Create GitHub Deployment
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const deployment = await github.rest.repos.createDeployment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        ref: context.sha,
+                        environment: 'production',
+                        auto_merge: false,
+                        required_contexts: [],
+                        description: `Deployed image ${context.sha.substring(0, 7)} to Coolify`,
+                      });
+                      await github.rest.repos.createDeploymentStatus({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        deployment_id: deployment.data.id,
+                        state: 'success',
+                        description: 'Docker image pushed to GHCR – Coolify auto-deploys',
+                      });
 
             - name: Image digest
               run: echo "${{ steps.meta.outputs.tags }}"

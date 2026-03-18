@@ -18,11 +18,11 @@ A real-time library occupancy tracking system for the University of Mannheim. Th
 
 -   **Framework**: Next.js 15 (App Router, TypeScript)
 -   **Database**: PostgreSQL with Drizzle ORM
--   **Hosting**: Self-hosted on Dockploy with Traefik reverse proxy
+-   **Hosting**: Self-hosted via Coolify
 -   **Styling**: Tailwind CSS with tailwindcss-animate
 -   **Charts**: Recharts
 -   **Date/Time**: Luxon (Europe/Berlin timezone)
--   **CI/CD**: GitHub Actions with GitHub Container Registry
+-   **CI/CD**: GitHub Actions
 
 ### Data Flow
 
@@ -47,7 +47,13 @@ npm install
 
 # Set up environment variables
 cp example.env .env.local
-# Edit .env.local with your DATABASE_URL and API_KEY
+# Edit .env.local with your API_KEY
+
+# Start Postgres
+make up
+
+# Push schema to database
+make db-push
 
 # Run development server
 npm run dev
@@ -58,18 +64,18 @@ npm run dev
 ### Docker Development (Recommended)
 
 ```bash
-# Start with hot reload
-make dev-up      # With logs
-make dev         # Detached mode
+# First time setup
+make setup
+
+# Start Postgres + Next.js dev server
+make dev
 
 # Other commands
-make logs        # View logs
-make down        # Stop containers
-make dkwi        # Enter container shell
-make rebuild-dev # Full rebuild
+make logs        # View Postgres logs
+make down        # Stop Postgres
+make db-studio   # Open Drizzle Studio
+make db-reset    # Reset database
 ```
-
-See [DOCKER.md](DOCKER.md) for complete Docker documentation.
 
 ## API Endpoints
 
@@ -94,7 +100,7 @@ See [DOCKER.md](DOCKER.md) for complete Docker documentation.
 ### Environment Variables
 
 ```bash
-DATABASE_URL="postgresql://..."  # Supabase connection string (transaction pooling)
+DATABASE_URL="postgresql://..."  # PostgreSQL connection string
 API_KEY="your_api_key"          # Secret for cron route authentication
 NODE_ENV="development|production"
 ```
@@ -136,24 +142,17 @@ Scraped names are normalized to canonical IDs:
 
 ## Deployment
 
-### Production (Dockploy + GitHub Actions)
+### Production (Coolify)
 
 ```bash
-# Production commands
-make prod        # Start detached
-make prod-up     # Start with logs
-make prod-pull   # Pull latest image
-make rebuild-prod # Pull latest and restart
+# Local production test
+make prod-up     # Build & start full stack
+make prod-logs   # Follow logs
+make prod-down   # Stop stack
+make prod-reset  # Reset all data
 ```
 
-**Deployment Flow**:
-
-1. Push to `main` branch
-2. GitHub Actions builds Docker image
-3. Image pushed to GitHub Container Registry
-4. Dockploy pulls and deploys automatically
-
-See [DOCKPLOY.md](DOCKPLOY.md) and [CI-CD.md](CI-CD.md) for detailed deployment guides.
+**Coolify Deployment**: Push to `main` branch triggers automatic deployment via Coolify using `docker-compose.prod.yml`.
 
 ## Project Structure
 
@@ -206,9 +205,6 @@ This project is open source and available under the MIT License.
 -   **Production**: [bib2.rjks.us](https://bib2.rjks.us)
 -   **Repository**: [GitHub](https://github.com/robert-kratz/uni-mannheim-bib-scraper)
 -   **Documentation**:
-    -   [Docker Guide](DOCKER.md)
-    -   [Deployment Guide](DOCKPLOY.md)
-    -   [CI/CD Pipeline](CI-CD.md)
     -   [AI Coding Instructions](.github/copilot-instructions.md)
 
 ## Acknowledgments

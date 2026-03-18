@@ -14,8 +14,7 @@ function getClient() {
     }
 
     if (!clientInstance) {
-        // Disable prefetch as it is not supported for "Transaction" pool mode
-        clientInstance = postgres(connectionString, { prepare: false, ssl: { rejectUnauthorized: false } });
+        clientInstance = postgres(connectionString, { prepare: false });
     }
 
     return clientInstance;

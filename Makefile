@@ -1,102 +1,180 @@
-.PHONY: help dev dev-up down logs dkwi build-dev rebuild-dev rebuild-prod build-prod prod prod-up prod-down prod-logs clean
+# =============================================================================
+# Makefile - Uni Mannheim Bib Scraper
+# =============================================================================
+#
+# App runs on host (npm run dev). Docker is used ONLY for Postgres.
+# =============================================================================
 
-# Default target
-.DEFAULT_GOAL := help
+.PHONY: help install dev up down logs db-generate db-migrate db-studio db-push db-reset db-reset-seed clean prod-up prod-down prod-logs prod-ps prod-restart prod-reset
 
-# Colors for output
-BLUE := \033[0;34m
+SHELL := /bin/zsh
+
+# Colors
+CYAN := \033[0;36m
 GREEN := \033[0;32m
 YELLOW := \033[0;33m
-NC := \033[0m # No Color
+RED := \033[0;31m
+NC := \033[0m
 
-##@ Help
+# =============================================================================
+# HELP
+# =============================================================================
 
-help: ## Display this help message
-	@echo "$(BLUE)Available commands:$(NC)"
-	@awk 'BEGIN {FS = ":.*##"; printf "\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  $(GREEN)%-15s$(NC) %s\n", $$1, $$2 } /^##@/ { printf "\n$(YELLOW)%s$(NC)\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+help: ## Show this help message
+	@echo ""
+	@echo "$(CYAN)Uni Mannheim Bib Scraper$(NC)"
+	@echo "$(CYAN)=======================$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Available commands:$(NC)"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
 
-##@ Development
+# =============================================================================
+# INSTALLATION
+# =============================================================================
 
-dev: ## Start dev environment (detached, no logs)
-	@echo "$(BLUE)Starting development environment...$(NC)"
-	docker-compose -f docker-compose.dev.yml up -d
+install: ## Install all dependencies
+	@echo "$(CYAN)📦 Installing dependencies...$(NC)"
+	pnpm install
+	@echo "$(GREEN)✅ Dependencies installed$(NC)"
 
-dev-up: ## Start dev environment with logs
-	@echo "$(BLUE)Starting development environment with logs...$(NC)"
-	docker-compose -f docker-compose.dev.yml up
+# =============================================================================
+# INFRASTRUCTURE (Docker)
+# =============================================================================
 
-down: ## Stop dev environment
-	@echo "$(YELLOW)Stopping development environment...$(NC)"
-	docker-compose -f docker-compose.dev.yml down
+up: ## Start Postgres in Docker
+	@echo "$(CYAN)🐳 Starting Postgres...$(NC)"
+	docker compose -f docker-compose.dev.yml up -d
+	@echo "$(GREEN)✅ Postgres started$(NC)"
+	@echo ""
+	@echo "  PostgreSQL: localhost:5432"
+	@echo ""
 
-logs: ## Show dev logs
-	docker-compose -f docker-compose.dev.yml logs -f
+down: ## Stop Postgres
+	@echo "$(CYAN)🐳 Stopping Postgres...$(NC)"
+	docker compose -f docker-compose.dev.yml down
+	@echo "$(GREEN)✅ Postgres stopped$(NC)"
 
-dkwi: ## Enter dev container shell
-	@echo "$(BLUE)Entering container shell...$(NC)"
-	docker-compose -f docker-compose.dev.yml exec app sh
+logs: ## Show Postgres logs
+	docker compose -f docker-compose.dev.yml logs -f
 
-build-dev: ## Build dev image
-	@echo "$(BLUE)Building development image...$(NC)"
-	docker-compose -f docker-compose.dev.yml build
+# =============================================================================
+# DEVELOPMENT
+# =============================================================================
 
-rebuild-dev: ## Rebuild and restart dev environment
-	@echo "$(BLUE)Rebuilding development environment...$(NC)"
-	docker-compose -f docker-compose.dev.yml down
-	docker-compose -f docker-compose.dev.yml build --no-cache
-	docker-compose -f docker-compose.dev.yml up -d
-	@echo "$(GREEN)Development environment rebuilt!$(NC)"
+dev: up ## Start development (Postgres + Next.js with hot-reload)
+	@echo "$(CYAN)🚀 Starting development server...$(NC)"
+	pnpm dev
 
-##@ Production
+# =============================================================================
+# DATABASE
+# =============================================================================
 
-prod: ## Start production environment (detached, no logs)
-	@echo "$(BLUE)Starting production environment...$(NC)"
-	docker-compose -f docker-compose.prod.yml up -d
+db-generate: ## Generate Drizzle migrations from schema changes
+	@echo "$(CYAN)📝 Generating migrations...$(NC)"
+	pnpm drizzle:generate
+	@echo "$(GREEN)✅ Migrations generated$(NC)"
 
-prod-up: ## Start production environment with logs
-	@echo "$(BLUE)Starting production environment with logs...$(NC)"
-	docker-compose -f docker-compose.prod.yml up
+db-migrate: ## Run pending migrations
+	@echo "$(CYAN)🔄 Running migrations...$(NC)"
+	pnpm drizzle:migrate
+	@echo "$(GREEN)✅ Migrations complete$(NC)"
 
-prod-down: ## Stop production environment
-	@echo "$(YELLOW)Stopping production environment...$(NC)"
-	docker-compose -f docker-compose.prod.yml down
+db-push: ## Push schema changes directly to database (dev only)
+	@echo "$(CYAN)📤 Pushing schema to database...$(NC)"
+	pnpm dlx drizzle-kit push
+	@echo "$(GREEN)✅ Schema pushed$(NC)"
 
-prod-logs: ## Show production logs
-	docker-compose -f docker-compose.prod.yml logs -f
+db-studio: ## Open Drizzle Studio (database GUI)
+	@echo "$(CYAN)🎨 Opening Drizzle Studio...$(NC)"
+	pnpm dlx drizzle-kit studio
 
-prod-pull: ## Pull latest production image from registry
-	@echo "$(BLUE)Pulling latest production image...$(NC)"
-	docker-compose -f docker-compose.prod.yml pull
+db-reset: down ## Reset database (WARNING: destroys all data)
+	@echo "$(RED)⚠️  Resetting database...$(NC)"
+	docker volume rm uni-mannheim-bib-scraper_postgres_data 2>/dev/null || true
+	@$(MAKE) up
+	@sleep 3
+	@$(MAKE) db-push
+	@echo "$(GREEN)✅ Database reset complete$(NC)"
 
-build-prod: ## Build production image locally
-	@echo "$(BLUE)Building production image...$(NC)"
-	docker build -t ghcr.io/robert-kratz/uni-mannheim-bib-scraper:latest .
+db-reset-seed: down ## Reset database, run migrations and push schema
+	@echo "$(RED)⚠️  Resetting database...$(NC)"
+	docker volume rm uni-mannheim-bib-scraper_postgres_data 2>/dev/null || true
+	@$(MAKE) up
+	@sleep 3
+	@echo "$(CYAN)📝 Generating migrations...$(NC)"
+	pnpm drizzle:generate
+	@echo "$(CYAN)🔄 Running migrations...$(NC)"
+	pnpm drizzle:migrate
+	@echo "$(CYAN)📤 Pushing schema...$(NC)"
+	pnpm dlx drizzle-kit push
+	@echo "$(GREEN)✅ Database reset and ready$(NC)"
 
-rebuild-prod: ## Pull latest image and restart production environment
-	@echo "$(BLUE)Pulling and restarting production environment...$(NC)"
-	docker-compose -f docker-compose.prod.yml down
-	docker-compose -f docker-compose.prod.yml pull
-	docker-compose -f docker-compose.prod.yml up -d
-	@echo "$(GREEN)Production environment restarted with latest image!$(NC)"
+# =============================================================================
+# PRODUCTION (pull from GHCR + bundled Postgres)
+# =============================================================================
 
-##@ Utility
+PROD_COMPOSE := docker compose -f docker-compose.prod.yml
 
-clean: ## Clean up containers, volumes and images
-	@echo "$(YELLOW)Cleaning up Docker resources...$(NC)"
-	docker-compose -f docker-compose.dev.yml down -v
-	docker-compose -f docker-compose.prod.yml down -v
-	@echo "$(GREEN)Cleanup complete!$(NC)"
+prod-up: ## Start production stack (pulls latest image from GHCR)
+	@echo "$(CYAN)🚀 Pulling latest image and starting production stack...$(NC)"
+	@$(MAKE) down 2>/dev/null || true
+	$(PROD_COMPOSE) pull app
+	$(PROD_COMPOSE) up -d
+	@echo ""
+	@echo "$(GREEN)✅ Production stack running$(NC)"
+	@echo ""
+	@echo "  Web App: http://localhost:3000"
+	@echo ""
 
-restart-dev: ## Restart dev environment
-	@echo "$(BLUE)Restarting development environment...$(NC)"
-	docker-compose -f docker-compose.dev.yml restart
+prod-down: ## Stop production stack
+	@echo "$(CYAN)Stopping production stack...$(NC)"
+	$(PROD_COMPOSE) down
+	@echo "$(GREEN)✅ Production stack stopped$(NC)"
 
-restart-prod: ## Restart production environment
-	@echo "$(BLUE)Restarting production environment...$(NC)"
-	docker-compose -f docker-compose.prod.yml restart
+prod-logs: ## Follow production logs
+	$(PROD_COMPOSE) logs -f
 
-ps: ## Show running containers
-	@echo "$(BLUE)Development:$(NC)"
-	@docker-compose -f docker-compose.dev.yml ps
-	@echo "\n$(BLUE)Production:$(NC)"
-	@docker-compose -f docker-compose.prod.yml ps
+prod-ps: ## Show production container status
+	$(PROD_COMPOSE) ps
+
+prod-restart: ## Restart production stack
+	@echo "$(CYAN)Restarting production stack...$(NC)"
+	$(PROD_COMPOSE) restart
+	@echo "$(GREEN)✅ Production stack restarted$(NC)"
+
+prod-reset: prod-down ## Reset production data (WARNING: destroys all data)
+	@echo "$(RED)⚠️  Resetting production data...$(NC)"
+	docker volume rm uni-mannheim-bib-scraper_postgres_data 2>/dev/null || true
+	@echo "$(GREEN)✅ Production data removed$(NC)"
+	@echo "$(YELLOW)Run 'make prod-up' to start fresh.$(NC)"
+
+# =============================================================================
+# CLEANUP
+# =============================================================================
+
+clean: down ## Clean build artifacts, dependencies and Docker volumes
+	@echo "$(CYAN)🧹 Cleaning project...$(NC)"
+	rm -rf node_modules .next
+	docker volume rm uni-mannheim-bib-scraper_postgres_data 2>/dev/null || true
+	@echo "$(GREEN)✅ Cleanup complete$(NC)"
+
+# =============================================================================
+# SETUP (First time)
+# =============================================================================
+
+setup: ## Initial project setup (run this first!)
+	@echo "$(CYAN)🎯 Setting up project...$(NC)"
+	@cp -n example.env .env.local 2>/dev/null || echo "   .env.local already exists"
+	@$(MAKE) install
+	@$(MAKE) up
+	@sleep 3
+	@$(MAKE) db-push
+	@echo ""
+	@echo "$(GREEN)✅ Setup complete!$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Next steps:$(NC)"
+	@echo "  1. Review .env.local"
+	@echo "  2. Run 'make dev' to start development"
+	@echo ""

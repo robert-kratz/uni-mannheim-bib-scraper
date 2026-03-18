@@ -1,160 +1,174 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-    :root {
-        --background: 0 0% 98%;
-        --foreground: 240 10% 3.9%;
+@theme {
+    --color-border: hsl(var(--border));
+    --color-input: hsl(var(--input));
+    --color-ring: hsl(var(--ring));
+    --color-background: hsl(var(--background));
+    --color-foreground: hsl(var(--foreground));
 
-        --card: 0 0% 100%;
-        --card-foreground: 240 10% 3.9%;
+    --color-primary: hsl(var(--primary));
+    --color-primary-foreground: hsl(var(--primary-foreground));
 
-        --popover: 0 0% 100%;
-        --popover-foreground: 240 10% 3.9%;
+    --color-secondary: hsl(var(--secondary));
+    --color-secondary-foreground: hsl(var(--secondary-foreground));
 
-        --primary: 240 5.9% 10%;
-        --primary-foreground: 0 0% 98%;
+    --color-destructive: hsl(var(--destructive));
+    --color-destructive-foreground: hsl(var(--destructive-foreground));
 
-        --secondary: 240 4.8% 95.9%;
-        --secondary-foreground: 240 5.9% 10%;
+    --color-muted: hsl(var(--muted));
+    --color-muted-foreground: hsl(var(--muted-foreground));
 
-        --muted: 240 4.8% 95.9%;
-        --muted-foreground: 240 3.8% 46.1%;
+    --color-accent: hsl(var(--accent));
+    --color-accent-foreground: hsl(var(--accent-foreground));
 
-        --accent: 210 100% 54%;
-        --accent-foreground: 0 0% 100%;
+    --color-popover: hsl(var(--popover));
+    --color-popover-foreground: hsl(var(--popover-foreground));
 
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
+    --color-card: hsl(var(--card));
+    --color-card-foreground: hsl(var(--card-foreground));
 
-        --border: 240 5.9% 90%;
-        --input: 240 5.9% 90%;
-        --ring: 240 5.9% 10%;
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
 
-        --radius: 0.75rem;
+    --font-sans: 'SF Pro Display', system-ui, sans-serif;
+
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
+    --animate-fade-in: fadeIn 0.5s ease-out forwards;
+    --animate-slide-in: slideIn 0.5s ease-out forwards;
+    --animate-pulse: pulse 2s ease-in-out infinite;
+
+    @keyframes accordion-down {
+        from { height: 0; }
+        to { height: var(--radix-accordion-content-height); }
     }
 
-    .dark {
-        --background: 240 10% 3.9%;
-        --foreground: 0 0% 98%;
-
-        --card: 240 10% 5.9%;
-        --card-foreground: 0 0% 98%;
-
-        --popover: 240 10% 5.9%;
-        --popover-foreground: 0 0% 98%;
-
-        --primary: 0 0% 98%;
-        --primary-foreground: 240 5.9% 10%;
-
-        --secondary: 240 3.7% 15.9%;
-        --secondary-foreground: 0 0% 98%;
-
-        --muted: 240 3.7% 15.9%;
-        --muted-foreground: 240 5% 64.9%;
-
-        --accent: 210 100% 54%;
-        --accent-foreground: 0 0% 100%;
-
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-
-        --border: 240 3.7% 15.9%;
-        --input: 240 3.7% 15.9%;
-        --ring: 240 4.9% 83.9%;
+    @keyframes accordion-up {
+        from { height: var(--radix-accordion-content-height); }
+        to { height: 0; }
     }
 
-    #root {
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 2rem;
-        text-align: center;
+    @keyframes fadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
     }
 
-    .logo {
-        height: 6em;
-        padding: 1.5em;
-        will-change: filter;
-        transition: filter 300ms;
-    }
-    .logo:hover {
-        filter: drop-shadow(0 0 2em #646cffaa);
-    }
-    .logo.react:hover {
-        filter: drop-shadow(0 0 2em #61dafbaa);
+    @keyframes slideIn {
+        0% { transform: translateY(20px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
     }
 
-    @keyframes logo-spin {
-        from {
-            transform: rotate(0deg);
-        }
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    @media (prefers-reduced-motion: no-preference) {
-        a:nth-of-type(2) .logo {
-            animation: logo-spin infinite 20s linear;
-        }
-    }
-
-    .card {
-        padding: 2em;
-    }
-
-    .read-the-docs {
-        color: #888;
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
     }
 }
 
-@layer base {
-    * {
-        @apply border-border;
-    }
+:root {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 3.9%;
 
-    body {
-        @apply bg-background text-foreground antialiased;
-        font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
-    }
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
 
-    /* For smooth scrolling */
-    html {
-        @apply scroll-smooth;
-    }
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 210 100% 54%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+
+    --radius: 0.75rem;
 }
 
-@layer utilities {
-    .glass {
-        @apply backdrop-blur-lg bg-white/10 border border-white/20;
-    }
+.dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
 
-    .dark .glass {
-        @apply bg-black/20 border-white/10;
-    }
+    --card: 240 10% 5.9%;
+    --card-foreground: 0 0% 98%;
 
-    .animation-delay-100 {
-        animation-delay: 100ms;
-    }
+    --popover: 240 10% 5.9%;
+    --popover-foreground: 0 0% 98%;
 
-    .animation-delay-200 {
-        animation-delay: 200ms;
-    }
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
 
-    .animation-delay-300 {
-        animation-delay: 300ms;
-    }
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    .transition-all-200 {
-        @apply transition-all duration-200;
-    }
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    .transition-all-300 {
-        @apply transition-all duration-300;
-    }
+    --accent: 210 100% 54%;
+    --accent-foreground: 0 0% 100%;
 
-    .transition-transform-300 {
-        @apply transition-transform duration-300;
-    }
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+}
+
+* {
+    @apply border-border;
+}
+
+body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+}
+
+html {
+    @apply scroll-smooth;
+}
+
+@utility glass {
+    @apply backdrop-blur-lg bg-white/10 border border-white/20;
+}
+
+.dark .glass {
+    @apply bg-black/20 border-white/10;
+}
+
+.animation-delay-100 {
+    animation-delay: 100ms;
+}
+
+.animation-delay-200 {
+    animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+    animation-delay: 300ms;
+}
+
+@utility transition-all-200 {
+    @apply transition-all duration-200;
+}
+
+@utility transition-all-300 {
+    @apply transition-all duration-300;
+}
+
+@utility transition-transform-300 {
+    @apply transition-transform duration-300;
 }

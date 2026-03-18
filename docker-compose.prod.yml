@@ -1,31 +1,38 @@
-# Production docker-compose with Traefik labels for Dockploy
+# Production docker-compose for Coolify deployment
+# The app image is pulled from GHCR (built by GitHub Actions).
 services:
-  app:
-    image: ghcr.io/robert-kratz/uni-mannheim-bib-scraper:latest
-    pull_policy: always
+  postgres:
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - API_KEY=${API_KEY}
-      - PORT=3040
-    expose:
-      - "3040"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.bib-app.rule=Host(`bib2.rjks.us`)"
-      - "traefik.http.routers.bib-app.entrypoints=websecure"
-      - "traefik.http.routers.bib-app.tls=true"
-      - "traefik.http.routers.bib-app.tls.certresolver=letsencrypt"
-      - "traefik.http.services.bib-app.loadbalancer.server.port=3040"
-      # Optional: HTTP to HTTPS redirect
-      - "traefik.http.routers.bib-app-http.rule=Host(`bib2.rjks.us`)"
-      - "traefik.http.routers.bib-app-http.entrypoints=web"
-      - "traefik.http.routers.bib-app-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-    networks:
-      - dokploy-network
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-bib}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-bib}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-networks:
-  dokploy-network:
-    external: true
+  app:
+    image: 'ghcr.io/robert-kratz/uni-mannheim-bib-scraper:latest'
+    restart: unless-stopped
+    pull_policy: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - '3000'
+    labels:
+      - traefik.http.services.${COOLIFY_CONTAINER_NAME:-app}.loadbalancer.server.port=3000
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      HOSTNAME: '0.0.0.0'
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bib}
+      API_KEY: ${API_KEY:?API_KEY is required}
+
+volumes:
+  postgres_data:

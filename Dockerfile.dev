@@ -1,5 +1,7 @@
-# Development Dockerfile for Next.js 15 with hot reload
-FROM node:20-alpine
+# Development Dockerfile for Next.js 16 with hot reload
+FROM node:22-alpine
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
@@ -7,10 +9,10 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
 # Copy package files
-COPY package.json package-lock.json* ./
+COPY package.json pnpm-lock.yaml ./
 
 # Install all dependencies (including dev dependencies)
-RUN npm install
+RUN pnpm install
 
 # Copy source code
 COPY . .
@@ -19,4 +21,4 @@ COPY . .
 EXPOSE 3000
 
 # Start development server with Turbopack
-CMD ["npm", "run", "dev"]
+CMD ["pnpm", "dev"]

@@ -3,8 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from 'next-themes';
 import NProgressBar from '@/components/NProgressBar';
-import CookieConsent from '@/components/CookieConsent';
-import Script from 'next/script';
+import { AnalyticsProvider, GoogleAnalyticsScript, CookieBanner } from '@/lib/analytics';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -37,24 +36,13 @@ export default function RootLayout({
                 <link rel="apple-touch-icon" href="/icons/icon-192.png" />
             </head>
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased `}>
-                {/* Plausible Analytics */}
-                <Script
-                    defer
-                    data-domain="bib2.rjks.us"
-                    src="https://analytics.rjks.us/js/script.file-downloads.hash.outbound-links.pageview-props.tagged-events.js"
-                    strategy="afterInteractive"
-                />
-                <Script
-                    id="plausible-init"
-                    strategy="afterInteractive"
-                    dangerouslySetInnerHTML={{
-                        __html: `window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }`,
-                    }}
-                />
+                <GoogleAnalyticsScript />
                 <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-                    <NProgressBar />
-                    {children}
-                    <CookieConsent />
+                    <AnalyticsProvider>
+                        <NProgressBar />
+                        {children}
+                        <CookieBanner />
+                    </AnalyticsProvider>
                 </ThemeProvider>
             </body>
         </html>

@@ -21,7 +21,7 @@ This Next.js 15 app tracks real-time library occupancy at University of Mannheim
 -   **BibPredictionData:** Predicted occupancy (same structure as BibData)
 -   **CalendarEvent:** Semester events (name, type enum, start, end) with unique constraint on (name, start)
 
-**Critical:** Use Drizzle ORM with `db` from `drizzle/index.ts`. Connection uses `prepare: false` for transaction pooling compatibility with Supabase.
+**Critical:** Use Drizzle ORM with `db` from `drizzle/index.ts`. Connection uses `prepare: false`.
 
 ## Key Patterns
 
@@ -74,24 +74,18 @@ Scraper in `lib/scraper.ts` maps German labels to types:
 ### Local Development
 
 ```bash
-npm install
-npm run dev  # Starts Next.js on port 3000 with Turbopack
+make setup       # First-time setup (install + Postgres + schema push)
+make dev         # Start Postgres + Next.js dev server
 ```
 
-### Docker Development (Recommended)
+### Docker Development
 
 ```bash
-# Start with hot reload
-make dev-up      # With logs
-make dev         # Detached
-
-# Other commands
-make down        # Stop containers
-make logs        # View logs
-make dkwi        # Enter container shell
-make rebuild-dev # Full rebuild
-
-# See DOCKER.md for complete guide
+make up          # Start Postgres only
+make down        # Stop Postgres
+make logs        # View Postgres logs
+make db-studio   # Open Drizzle Studio
+make db-reset    # Reset database
 ```
 
 ### Database Migrations
@@ -105,23 +99,27 @@ npm run drizzle:migrate   # Apply migrations to database
 
 ### Environment Setup
 
-Copy `example.env` to `.env.local` (or use `.env.development` for Docker):
+Copy `example.env` to `.env.local`:
 
--   `DATABASE_URL`: PostgreSQL connection string (Supabase transaction pool mode)
+-   `DATABASE_URL`: PostgreSQL connection string (local Postgres via `docker-compose.dev.yml`)
 -   `API_KEY`: Secret for cron route authentication
 
-For production, copy `.env.production.example` to `.env.production`.
+### Cron Jobs
 
-### Cron Route Testing
+Cron jobs run in-process via `node-cron`, started automatically at server boot through Next.js instrumentation (`instrumentation.ts` → `lib/cron.ts`).
+
+| Endpoint | Schedule | Description |
+|---|---|---|
+| `/api/cron/scrape-library` | Every 3 minutes | Scrape current library occupancy |
+| `/api/cron/predict-library` | Every 3 minutes | Generate occupancy predictions |
+| `/api/cron/scrape-calendar` | Daily at 03:00 | Scrape semester calendar |
+
+Manual testing:
 
 ```bash
-# Scrape current library occupancy
 curl -H "x-api-key: your_key" http://localhost:3000/api/cron/scrape-library
-
-# Scrape semester calendar
 curl -H "x-api-key: your_key" http://localhost:3000/api/cron/scrape-calendar
-
-# (predict-library route not yet implemented)
+curl -H "x-api-key: your_key" http://localhost:3000/api/cron/predict-library
 ```
 
 ## Component Conventions
@@ -153,36 +151,34 @@ Tailwind CSS with `tailwindcss-animate` for transitions. Use library colors from
 2. **Missing library filtering:** Always check `ALLOWED_LIBS` before inserting into DB to prevent bad data
 3. **Chunk boundary errors:** Chunk range is 0-143. API routes accept `startChunk` and `endChunk` params (default: 0-143)
 4. **Date format:** API expects `YYYY-MM-DD` format. Validate with `/^\d{4}-\d{2}-\d{2}$/` before processing
-5. **Drizzle prepare mode:** Never enable `prepare: true` in postgres client config (breaks Supabase pooling)
+5. **Drizzle prepare mode:** Never enable `prepare: true` in postgres client config
 
 ## Deployment
 
-### Docker/Dockploy (Production)
+### CI/CD (GitHub Actions)
 
-Self-hosted on `bib2.rjks.us` using Dockploy with Traefik:
+On push to `main`, `.github/workflows/build-docker.yml` builds the Docker image and pushes it to GHCR (`ghcr.io/robert-kratz/uni-mannheim-bib-scraper:latest`). A GitHub Deployment is created automatically.
+
+### Coolify (Production)
+
+Self-hosted via Coolify using `docker-compose.prod.yml`. The compose file pulls the app image from GHCR and runs a bundled Postgres container. Coolify auto-deploys when a new image is pushed.
 
 ```bash
-# Production commands
-make prod        # Start detached
-make prod-up     # Start with logs
-make prod-down   # Stop
-make prod-pull   # Pull latest image from GitHub Container Registry
-make rebuild-prod # Pull latest and restart
+# Local production test (pulls from GHCR)
+make prod-up      # Pull latest image & start full stack
+make prod-down    # Stop
+make prod-logs    # Follow logs
+make prod-reset   # Reset all production data
 ```
 
-**CI/CD Pipeline:**
+**Environment variables** (set in Coolify):
 
--   GitHub Actions automatically builds Docker image on push to `main`
--   Image pushed to GitHub Container Registry (`ghcr.io/robert-kratz/uni-mannheim-bib-scraper`)
--   Dockploy pulls pre-built image (no build on server)
+-   `POSTGRES_USER` - Postgres username (default: `postgres`)
+-   `POSTGRES_PASSWORD` - Postgres password (required)
+-   `POSTGRES_DB` - Database name (default: `bib`)
+-   `API_KEY` - Secret for cron route authentication (required)
 
-**Traefik Configuration:** Labels in `docker-compose.prod.yml` handle:
-
--   Automatic SSL via Let's Encrypt
--   Domain routing for `bib2.rjks.us`
--   HTTP → HTTPS redirect
-
-See `DOCKER.md` for complete deployment guide.
+`DATABASE_URL` is constructed automatically inside `docker-compose.prod.yml` from the Postgres variables.
 
 ## Key Files Reference
 
@@ -193,8 +189,10 @@ See `DOCKER.md` for complete deployment guide.
 -   `utils/constants.ts` - Library definitions and allowed library set
 -   `app/api/bib/[date]/route.ts` - Main occupancy API endpoint
 -   `app/api/cron/*` - Background scraping jobs (require API key auth)
--   `Dockerfile` / `Dockerfile.dev` - Production/dev containerization
--   `docker-compose.prod.yml` / `docker-compose.dev.yml` - Docker orchestration
+-   `lib/cron.ts` - node-cron scheduler (scrape-library, predict-library, scrape-calendar)
+-   `instrumentation.ts` - Next.js instrumentation hook (starts cron jobs at boot)
+-   `Dockerfile` - Production multi-stage build (pnpm, standalone Next.js)
+-   `docker-compose.prod.yml` - Production compose (GHCR image + Postgres)
+-   `docker-compose.dev.yml` - Development compose (Postgres only)
+-   `.github/workflows/build-docker.yml` - CI: build, push to GHCR, create deployment
 -   `Makefile` - Development shortcuts
--   `.github/workflows/build-docker.yml` - CI/CD pipeline for Docker builds
--   `DOCKER.md` - Complete Docker deployment guide

@@ -1,20 +1,16 @@
-# Development docker-compose with hot reload
+# Development docker-compose: Postgres only (app runs on host)
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
+  postgres:
+    image: postgres:16-alpine
     restart: unless-stopped
-    ports:
-      - "3040:3000"
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=${DATABASE_URL}
-      - API_KEY=${API_KEY}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bib
+    ports:
+      - "5432:5432"
     volumes:
-      # Mount source code for hot reload
-      - ./:/app
-      - /app/node_modules
-      - /app/.next
-    stdin_open: true
-    tty: true
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
