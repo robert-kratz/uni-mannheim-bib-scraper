@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { WeatherData } from '@/lib/weather';
 
 /* ------------------------------------------------------------------ */
@@ -15,7 +15,7 @@ interface WeatherContextType {
 /* ------------------------------------------------------------------ */
 /*  Config                                                             */
 /* ------------------------------------------------------------------ */
-const REFRESH_INTERVAL = 60 * 30; // 30 min in seconds
+const _REFRESH_INTERVAL = 60 * 30; // 30 min in seconds
 
 const WeatherContext = createContext<WeatherContextType | undefined>(undefined);
 
@@ -30,7 +30,7 @@ interface WeatherProviderProps {
 
 export const WeatherProvider: React.FC<WeatherProviderProps> = ({ children, initialData, initialDate }) => {
     const [weatherData, setWeatherData] = useState<WeatherData[]>(initialData || []);
-    const [date, setDate] = useState<string>(initialDate);
+    const [date] = useState<string>(initialDate);
     const [loading, setLoading] = useState<boolean>(!initialData || initialData.length === 0);
 
     /* --------------------------- Client-side fetch wenn keine initialData --------------------------- */

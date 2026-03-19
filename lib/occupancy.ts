@@ -97,8 +97,8 @@ export async function getDailyOccupancy(
         const existingChunks = Array.from(dataMap.keys()).sort((a, b) => a - b);
 
         // Finde die erste und letzte Chunk mit Daten
-        const firstChunk = existingChunks[0];
-        const lastChunk = existingChunks[existingChunks.length - 1];
+        const firstChunk = existingChunks[0]; // eslint-disable-line @typescript-eslint/no-unused-vars
+        const lastChunk = existingChunks[existingChunks.length - 1]; // eslint-disable-line @typescript-eslint/no-unused-vars
 
         // Interpoliere nur zwischen dem ersten und letzten existierenden Datenpunkt
         for (let i = 0; i < existingChunks.length - 1; i++) {
@@ -127,7 +127,7 @@ export async function getDailyOccupancy(
 
     // Sortiert alphabetisch nach ALL_LIBS-Reihenfolge
     Array.from(libsSet)
-        .sort((a, b) => ALL_LIBS.indexOf(a as any) - ALL_LIBS.indexOf(b as any))
+        .sort((a, b) => ALL_LIBS.indexOf(a as (typeof ALL_LIBS)[number]) - ALL_LIBS.indexOf(b as (typeof ALL_LIBS)[number]))
         .forEach((lib) => {
             // Holen und interpolieren der Occupancy-Daten
             const oMap = occMap.has(lib) ? interpolateGaps(occMap.get(lib)!) : new Map();

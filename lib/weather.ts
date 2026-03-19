@@ -111,8 +111,6 @@ export async function getWeather(date: string | Date, zone = 'Europe/Berlin'): P
 
             const parsed = ApiSchema.parse(await res.json());
 
-            console.log(`getWeather(): ${dayKey} (${zone})`, parsed.properties);
-
             const list: WeatherData[] = parsed.properties.timeseries
                 .map(({ time, data }: z.infer<typeof PointSchema>) => {
                     const dt = DateTime.fromISO(time, { zone: 'utc' }).setZone(zone);
@@ -139,7 +137,7 @@ export async function getWeather(date: string | Date, zone = 'Europe/Berlin'): P
 
         cache.set(dayKey, promise);
         return promise;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('getWeather():', error);
         return [];
     }

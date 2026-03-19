@@ -33,9 +33,6 @@ export async function GET(request: NextRequest) {
     try {
         const scraped: BibDataRow[] = await fetchScrapedData(SCRAPE_URL);
 
-        console.log('Scraped data:', scraped.length, 'rows');
-        console.log(scraped);
-
         let inserted = 0;
         for (const row of scraped) {
             // 3) Filter: nur erlaubte Bibliotheken & valid row.name
@@ -57,8 +54,9 @@ export async function GET(request: NextRequest) {
         }
 
         return NextResponse.json({ status: 'ok', inserted });
-    } catch (err: any) {
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('Cron update failed', err);
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        return NextResponse.json({ status: 'error', message }, { status: 500 });
     }
 }

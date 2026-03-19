@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { format, parseISO, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
+import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { SemesterPeriod } from '@/utils/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { analytics } from '@/lib/analytics';

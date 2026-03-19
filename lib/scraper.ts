@@ -1,7 +1,7 @@
 // lib/scraper.ts
 import axios, { AxiosResponse } from 'axios';
 import { load } from 'cheerio';
-import { CalendarEvent, EventType } from '@/drizzle/schema';
+import { CalendarEvent } from '@/drizzle/schema';
 import { InferInsertModel } from 'drizzle-orm';
 
 /**
@@ -114,8 +114,6 @@ export async function fetchScrapedData(url: string): Promise<BibDataRow[]> {
                 return { percentage: 0, name: '', year, month, day, chunk: 0, iat, ttl };
             }
         });
-
-    console.log(`Scraped ${rows.length} rows from ${url}`);
 
     return rows;
 }

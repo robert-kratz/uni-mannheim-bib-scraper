@@ -1,4 +1,4 @@
-import { format, parseISO, isWithinInterval } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { SemesterPeriod } from '@/utils/types';
 
 // Find periods for a specific day

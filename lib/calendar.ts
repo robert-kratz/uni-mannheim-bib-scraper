@@ -1,8 +1,8 @@
 // lib/calendar.ts
 import { db } from '@/drizzle';
 import { CalendarEvent } from '@/drizzle/schema';
-import { InferSelectModel, and, gte, lte } from 'drizzle-orm';
-import { InferSemesterPeriod, SemesterPeriod } from '@/utils/types';
+import { and, gte, lte } from 'drizzle-orm';
+import { InferSemesterPeriod } from '@/utils/types';
 
 /**
  * Liefert alle (oder gefilterte) Kalender-Events sortiert nach Startdatum.

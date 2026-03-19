@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import {
     ResponsiveContainer,
     LineChart,
@@ -13,7 +13,7 @@ import {
     Legend,
     ReferenceLine,
 } from 'recharts';
-import { addDays, isAfter, parseISO, format, isToday, isFuture } from 'date-fns';
+import { addDays, isAfter, parseISO, format, isToday } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { Library, DailyOccupancyData } from '@/utils/types';
 import { useOccupancy } from '@/hooks/use-occupancy';

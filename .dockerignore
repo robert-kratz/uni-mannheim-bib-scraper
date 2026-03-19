@@ -47,7 +47,3 @@ docker-compose*.yml
 
 # Documentation
 README.md
-*.md
-
-# Drizzle migrations (optional - remove if needed in container)
-drizzle/migrations

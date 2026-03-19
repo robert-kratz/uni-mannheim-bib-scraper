@@ -9,7 +9,7 @@ import MobileOccupancyGraph from '@/components/MobileOccupancyGraph';
 import Calendar from '@/components/Calendar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import CurrentOccupancy from '@/components/CurrentOccupancy';
-import { DailyOccupancyData, SemesterPeriod } from '@/utils/types';
+import { SemesterPeriod } from '@/utils/types';
 import { libraries } from '@/utils/constants';
 import Footer from '@/components/Footer';
 import { AlertTriangle } from 'lucide-react';
@@ -25,7 +25,7 @@ type Props = {
 export default function IndexPage({ semesterPeriods }: Props) {
     const isMobile = useIsMobile();
     const { date, loading } = useOccupancy();
-    const { isInstallable, promptInstall } = usePWAInstall();
+    const { isInstallable: _isInstallable, promptInstall: _promptInstall } = usePWAInstall();
 
     // Calendar state
     const [calendarDate, setCalendarDate] = useState<Date>(new Date(date));

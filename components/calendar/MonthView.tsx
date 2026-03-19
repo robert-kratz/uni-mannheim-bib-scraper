@@ -1,5 +1,5 @@
 import React from 'react';
-import { format, getDay, isSameDay } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 interface MonthViewProps {

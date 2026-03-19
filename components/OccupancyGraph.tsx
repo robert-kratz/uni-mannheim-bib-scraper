@@ -13,7 +13,7 @@ import {
     Legend,
     ReferenceLine,
 } from 'recharts';
-import { addDays, isAfter, parseISO, format, isToday, isSameDay } from 'date-fns';
+import { addDays, isAfter, parseISO, format, isToday } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import { Library, DailyOccupancyData } from '@/utils/types';

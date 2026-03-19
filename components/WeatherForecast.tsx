@@ -127,7 +127,7 @@ export default function WeatherForecast() {
 
     /* ----------  DESKTOP: nächste 12 Stunden (12 Slots) ----------- */
     const deskStart = isToday ? now : DateTime.fromJSDate(selectedDate).setZone('Europe/Berlin').startOf('day');
-    const deskEnd = deskStart.plus({ hours: 12 });
+    const _deskEnd = deskStart.plus({ hours: 12 });
     const desktopSlots = weatherData.sort((a, b) => berlin(a.time).toMillis() - berlin(b.time).toMillis());
 
     /* ---------- list row & slim box ------------------------------- */

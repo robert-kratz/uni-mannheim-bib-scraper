@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Library, OccupancyDataPoint } from '@/utils/types';
+import { Library } from '@/utils/types';
 import { Progress } from '@/components/ui/progress';
 import { ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
 import { getDisplayName } from '@/lib/libraryNames';

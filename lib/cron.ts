@@ -13,8 +13,7 @@ async function callCronEndpoint(path: string) {
         const res = await fetch(`${BASE_URL}${path}`, {
             headers: { 'x-api-key': apiKey },
         });
-        const body = await res.json();
-        console.log(`[cron] ${path} → ${res.status}`, body);
+        await res.json();
     } catch (err) {
         console.error(`[cron] ${path} failed:`, err);
     }
@@ -35,13 +34,7 @@ export function startCronJobs() {
     // Once per day at 03:00: scrape semester calendar
     cron.schedule('0 3 * * *', () => callCronEndpoint('/api/cron/scrape-calendar'));
 
-    console.log('[cron] Scheduled jobs started');
-    console.log('[cron]   scrape-library   → every 3 min');
-    console.log('[cron]   predict-library  → every 3 min');
-    console.log('[cron]   scrape-calendar  → daily at 03:00');
-
     // Run all jobs once immediately on startup
-    console.log('[cron] Running all jobs once on startup...');
     callCronEndpoint('/api/cron/scrape-library');
     callCronEndpoint('/api/cron/predict-library');
     callCronEndpoint('/api/cron/scrape-calendar');

@@ -28,8 +28,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ date
                 },
             }
         );
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
         console.error('Weather API error:', error);
-        return NextResponse.json({ error: 'Failed to fetch weather data', details: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch weather data', details: message }, { status: 500 });
     }
 }

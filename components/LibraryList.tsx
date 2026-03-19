@@ -25,7 +25,7 @@ export default function LibraryList({
         // Simulate loading delay
         const timer = setTimeout(() => {
             // Stagger the animation of each library card
-            libraries.forEach((library, index) => {
+            libraries.forEach((library, _index) => {
                 setTimeout(() => {
                     setLoadedItems((prev) => [...prev, library.id]);
                 }, 50); // 100ms delay between each card

@@ -39,8 +39,9 @@ export async function GET(req: NextRequest) {
         }
 
         return NextResponse.json({ status: 'ok', inserted });
-    } catch (err: any) {
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('Calendar scrape failed:', err);
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        return NextResponse.json({ status: 'error', message }, { status: 500 });
     }
 }
