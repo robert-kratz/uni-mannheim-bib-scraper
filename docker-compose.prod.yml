@@ -1,5 +1,4 @@
-# Production docker-compose for Coolify deployment
-# The app image is pulled from GHCR (built by GitHub Actions).
+# Bereinigte Version für Coolify v4
 services:
   postgres:
     image: postgres:16-alpine
@@ -15,8 +14,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - db
 
   app:
     image: 'ghcr.io/robert-kratz/uni-mannheim-bib-scraper:latest'
@@ -27,21 +24,12 @@ services:
         condition: service_healthy
     expose:
       - '3000'
-    labels:
-      - traefik.http.services.${COOLIFY_CONTAINER_NAME:-app}.loadbalancer.server.port=3000
     environment:
       NODE_ENV: production
       PORT: '3000'
       HOSTNAME: '0.0.0.0'
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bib}
       API_KEY: ${API_KEY:?API_KEY is required}
-    networks:
-      - db
-      - default
-
-networks:
-  db:
-    internal: true
 
 volumes:
   postgres_data:
