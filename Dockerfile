@@ -27,6 +27,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 ENV API_KEY="dummy-build-key"
 
+# GA4 Measurement ID (NEXT_PUBLIC_ vars are inlined at build time)
+ARG NEXT_PUBLIC_GA_MEASUREMENT_ID=""
+ENV NEXT_PUBLIC_GA_MEASUREMENT_ID=$NEXT_PUBLIC_GA_MEASUREMENT_ID
+
 RUN pnpm build
 
 # --- Runner ---

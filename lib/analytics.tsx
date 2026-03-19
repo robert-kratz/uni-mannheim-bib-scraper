@@ -209,14 +209,14 @@ export function CookieBanner() {
     };
 
     return (
-        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-40 retro-card bg-card/95 backdrop-blur-md shadow-depth-lg">
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-40 border-2 border-foreground/10 bg-card/95 backdrop-blur-md">
             {!showDetails ? (
                 <div className="p-4 space-y-3">
-                    <p className="text-xs text-muted-foreground leading-relaxed">
+                    <p className="font-mono text-xs text-muted-foreground leading-relaxed">
                         Wir verwenden Cookies, um die Website zu verbessern.{" "}
                         <Link
                             href="/datenschutz"
-                            className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
+                            className="text-foreground hover:underline transition-colors"
                         >
                             Datenschutzerklärung
                         </Link>
@@ -225,45 +225,42 @@ export function CookieBanner() {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setShowDetails(true)}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            className="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider"
                         >
                             Einstellungen
                         </button>
                         <span className="text-muted-foreground/30">·</span>
                         <button
                             onClick={rejectAll}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            className="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider"
                         >
-                            Alle ablehnen
+                            Ablehnen
                         </button>
                         <button
                             onClick={acceptAll}
-                            className="ml-auto retro-button-3d px-4 py-1.5 text-xs font-bold text-primary-foreground rounded-md"
+                            className="ml-auto px-4 py-1.5 font-mono text-xs font-bold uppercase tracking-wider bg-foreground text-background border-2 border-foreground hover:opacity-90 transition-all duration-200"
                         >
-                            Alle akzeptieren
+                            Akzeptieren
                         </button>
                     </div>
                 </div>
             ) : (
                 <div className="p-4 space-y-3">
-                    <div className="flex items-center gap-2">
-                        <div className="w-0.5 h-4 bg-primary rounded-full" />
-                        <h3 className="font-display text-sm font-bold text-foreground tracking-wider">
-                            Cookie-Einstellungen
-                        </h3>
-                    </div>
+                    <h3 className="font-mono text-xs font-bold text-foreground uppercase tracking-[0.2em]">
+                        Cookie-Einstellungen
+                    </h3>
 
                     <div className="space-y-2">
-                        <div className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded border border-border opacity-75">
+                        <div className="flex items-center justify-between py-2 px-3 border border-foreground/10 bg-secondary opacity-75">
                             <div className="flex-1 pr-3">
-                                <span className="text-xs font-semibold text-foreground">Notwendig</span>
+                                <span className="font-mono text-xs font-semibold text-foreground">Notwendig</span>
                             </div>
                             <Switch checked={true} disabled />
                         </div>
 
-                        <div className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded border border-border hover:border-primary/30 transition-colors">
+                        <div className="flex items-center justify-between py-2 px-3 border border-foreground/10 bg-secondary hover:border-foreground/30 transition-colors">
                             <div className="flex-1 pr-3">
-                                <span className="text-xs font-semibold text-foreground">Analyse</span>
+                                <span className="font-mono text-xs font-semibold text-foreground">Analyse</span>
                             </div>
                             <Switch
                                 checked={customSettings.analytics}
@@ -273,9 +270,9 @@ export function CookieBanner() {
                             />
                         </div>
 
-                        <div className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded border border-border hover:border-primary/30 transition-colors">
+                        <div className="flex items-center justify-between py-2 px-3 border border-foreground/10 bg-secondary hover:border-foreground/30 transition-colors">
                             <div className="flex-1 pr-3">
-                                <span className="text-xs font-semibold text-foreground">Marketing</span>
+                                <span className="font-mono text-xs font-semibold text-foreground">Marketing</span>
                             </div>
                             <Switch
                                 checked={customSettings.marketing}
@@ -286,18 +283,18 @@ export function CookieBanner() {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t-2 border-foreground/10">
                         <button
                             onClick={() => setShowDetails(false)}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            className="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider"
                         >
                             Zurück
                         </button>
                         <button
                             onClick={handleCustomSave}
-                            className="retro-button-3d px-4 py-1.5 text-xs font-bold text-primary-foreground rounded-md"
+                            className="px-4 py-1.5 font-mono text-xs font-bold uppercase tracking-wider bg-foreground text-background border-2 border-foreground hover:opacity-90 transition-all duration-200"
                         >
-                            Auswahl speichern
+                            Speichern
                         </button>
                     </div>
                 </div>

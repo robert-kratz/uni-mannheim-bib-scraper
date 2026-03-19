@@ -36,6 +36,7 @@ services:
       HOSTNAME: '0.0.0.0'
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bib}
       API_KEY: ${API_KEY:?API_KEY is required}
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}
 
 volumes:
   postgres_data:
