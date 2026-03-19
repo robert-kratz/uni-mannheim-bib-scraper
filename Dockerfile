@@ -55,9 +55,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/postgres ./node_modu
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 3010
 
-ENV PORT=3000
+ENV PORT=3010
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["sh", "script/docker-entrypoint.sh"]

@@ -117,9 +117,9 @@ Cron jobs run in-process via `node-cron`, started automatically at server boot t
 Manual testing:
 
 ```bash
-curl -H "x-api-key: your_key" http://localhost:3000/api/cron/scrape-library
-curl -H "x-api-key: your_key" http://localhost:3000/api/cron/scrape-calendar
-curl -H "x-api-key: your_key" http://localhost:3000/api/cron/predict-library
+curl -H "x-api-key: your_key" http://localhost:3010/api/cron/scrape-library
+curl -H "x-api-key: your_key" http://localhost:3010/api/cron/scrape-calendar
+curl -H "x-api-key: your_key" http://localhost:3010/api/cron/predict-library
 ```
 
 ## Component Conventions

@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}`;
+const BASE_URL = `http://localhost:${process.env.PORT || 3010}`;
 
 async function callCronEndpoint(path: string) {
     const apiKey = process.env.API_KEY;
