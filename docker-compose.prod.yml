@@ -25,7 +25,7 @@ services:
     expose:
       - '3010'
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3010/ || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3010/ || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 5
