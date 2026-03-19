@@ -137,14 +137,14 @@ export default function WeatherForecast() {
         return (
             <div
                 key={d.time}
-                className="grid grid-cols-[60px_40px_1fr_auto] items-center gap-2 bg-secondary/20 dark:bg-secondary/10 rounded-lg px-3 py-2">
-                <span className="text-sm font-medium text-muted-foreground">{dt.toFormat('HH:mm')}</span>
+                className="grid grid-cols-[60px_40px_1fr_auto] items-center gap-2 bg-secondary/30 border border-foreground/5 px-3 py-2">
+                <span className="font-mono text-xs font-medium text-muted-foreground">{dt.toFormat('HH:mm')}</span>
                 <span className="flex justify-center">{iconFor(d.condition, h)}</span>
                 <div className="flex flex-col">
-                    <span className="text-sm font-semibold">{Math.round(d.temperature)}°C</span>
+                    <span className="font-mono text-sm font-bold">{Math.round(d.temperature)}°C</span>
                     <span className="text-xs text-muted-foreground">{germanLabel(d.condition)}</span>
                 </div>
-                <span className="flex items-center gap-1 text-xs text-muted-foreground justify-end">
+                <span className="flex items-center gap-1 font-mono text-xs text-muted-foreground justify-end">
                     <Wind size={14} /> {Math.round(d.windSpeed)} m/s
                 </span>
             </div>
@@ -157,10 +157,10 @@ export default function WeatherForecast() {
         return (
             <div
                 key={d.time}
-                className="flex flex-col items-center space-y-2 py-4 w-16 shrink-0 bg-secondary/20 dark:bg-secondary/10 rounded-lg">
-                <span className="text-xs text-muted-foreground">{dt.toFormat('HH')} h</span>
+                className="flex flex-col items-center space-y-2 py-4 w-16 shrink-0 border border-foreground/5 bg-secondary/20">
+                <span className="font-mono text-[10px] text-muted-foreground">{dt.toFormat('HH')} h</span>
                 {iconFor(d.condition, h)}
-                <span className="text-sm font-medium">{Math.round(d.temperature)}°</span>
+                <span className="font-mono text-sm font-bold">{Math.round(d.temperature)}°</span>
             </div>
         );
     };
@@ -191,10 +191,10 @@ export default function WeatherForecast() {
 
     /* ---------- JSX ------------------------------------------------ */
     return (
-        <div className="w-full bg-white dark:bg-card rounded-xl border border-border p-4 shadow-sm mb-8">
+        <div className="w-full bg-card border-2 border-foreground/10 p-4 mb-8">
             <header className="flex justify-between pb-2">
-                <h2 className="text-xl font-medium">Wettervorhersage Mannheim</h2>
-                <p className="hidden md:block text-sm text-muted-foreground">{formattedDate}</p>
+                <h2 className="text-lg font-mono font-bold uppercase tracking-wide">Wettervorhersage</h2>
+                <p className="hidden md:block font-mono text-xs text-muted-foreground">{formattedDate}</p>
             </header>
 
             {/* mobile – 4 Fenster */}
@@ -215,7 +215,7 @@ export default function WeatherForecast() {
                 </div>
             )}
 
-            <p className="mt-3 text-xs text-muted-foreground text-center">
+            <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center uppercase tracking-wider">
                 Quelle&nbsp;
                 <a href="https://api.met.no" target="_blank" className="underline hover:no-underline">
                     api.met.no

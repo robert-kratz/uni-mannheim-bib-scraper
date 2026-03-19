@@ -88,7 +88,7 @@ db-push: ## Push schema changes directly to database (dev only)
 
 db-studio: ## Open Drizzle Studio (database GUI)
 	@echo "$(CYAN)🎨 Opening Drizzle Studio...$(NC)"
-	pnpm dlx drizzle-kit studio
+	pnpm drizzle-kit studio
 
 db-reset: down ## Reset database (WARNING: destroys all data)
 	@echo "$(RED)⚠️  Resetting database...$(NC)"

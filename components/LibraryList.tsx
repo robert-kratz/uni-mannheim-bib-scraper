@@ -9,16 +9,12 @@ interface LibraryListProps {
     libraries: Library[];
     favorites: string[];
     toggleFavorite: (id: string) => void;
-    showOnlyFavorites: boolean;
-    setShowOnlyFavorites: (show: boolean) => void;
 }
 
 export default function LibraryList({
     libraries,
     favorites,
     toggleFavorite,
-    showOnlyFavorites,
-    setShowOnlyFavorites,
 }: LibraryListProps) {
     const [mounted, setMounted] = useState(false);
     const [loadedItems, setLoadedItems] = useState<string[]>([]);
@@ -39,53 +35,46 @@ export default function LibraryList({
         return () => clearTimeout(timer);
     }, [libraries]);
 
-    // Filter libraries based on showOnlyFavorites
-    const displayedLibraries = showOnlyFavorites ? libraries.filter((lib) => favorites.includes(lib.id)) : libraries;
-
     if (!mounted) return null;
 
     return (
         <div className="w-full mb-8 animate-fadeIn">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-medium">Bibliotheken</h2>
-                <button
-                    onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                    className={`text-sm px-3 py-1 rounded-full transition-all duration-200 ${
-                        showOnlyFavorites ? 'bg-accent text-white' : 'bg-secondary hover:bg-secondary/80'
-                    }`}>
-                    {showOnlyFavorites ? 'Alle anzeigen' : 'Nur Favoriten'}
-                </button>
+                <h2 className="text-lg font-mono font-bold uppercase tracking-wide">Bibliotheken</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                {displayedLibraries.map((library, index) => (
+                {libraries.map((library, index) => (
                     <div
                         key={library.id}
                         onClick={() => toggleFavorite(library.id)}
-                        className={`relative group overflow-hidden p-4 rounded-xl cursor-pointer bg-white dark:bg-card border border-border transition-all duration-200 hover:shadow-md ${
+                        className={`relative group overflow-hidden cursor-pointer bg-card border-2 border-foreground/10 hover:dot-pattern transition-all duration-200 ${
                             loadedItems.includes(library.id) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
                         }`}
                         style={{
-                            transitionDelay: `${index * 100}ms`,
+                            transitionDelay: `${index * 80}ms`,
                             transitionProperty: 'transform, opacity',
+                            borderLeftWidth: '4px',
+                            borderLeftColor: library.color,
                         }}>
-                        <div className="absolute top-3 right-3">
-                            <button
-                                className="p-1.5 rounded-full transition-all duration-200"
-                                aria-label={
-                                    favorites.includes(library.id) ? 'Remove from favorites' : 'Add to favorites'
-                                }>
-                                <Heart
-                                    className={`w-5 h-5 transition-all duration-200 ${
-                                        favorites.includes(library.id)
-                                            ? 'fill-accent text-accent'
-                                            : 'fill-transparent text-muted-foreground group-hover:text-foreground'
-                                    }`}
-                                />
-                            </button>
+                        <div className="p-4">
+                            <div className="absolute top-3 right-3">
+                                <button
+                                    className="p-1 transition-all duration-200"
+                                    aria-label={
+                                        favorites.includes(library.id) ? 'Remove from favorites' : 'Add to favorites'
+                                    }>
+                                    <Heart
+                                        className={`w-4 h-4 transition-all duration-200 ${
+                                            favorites.includes(library.id)
+                                                ? 'fill-foreground text-foreground'
+                                                : 'fill-transparent text-muted-foreground group-hover:text-foreground'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
+                            <h3 className="font-mono font-semibold text-sm">{getDisplayName(library.name)}</h3>
                         </div>
-                        <div className="w-12 h-2 rounded-full mb-3" style={{ backgroundColor: library.color }} />
-                        <h3 className="font-medium">{getDisplayName(library.name)}</h3>
                     </div>
                 ))}
             </div>

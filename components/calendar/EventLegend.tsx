@@ -4,20 +4,20 @@ const EventLegend: React.FC = () => {
     return (
         <div className="flex flex-wrap mb-4 gap-3">
             <div className="flex space-x-2 items-center">
-                <div className="w-3 h-3 rounded-full bg-blue-300 dark:bg-blue-700"></div>
-                <span className="text-xs sm:text-sm">Vorlesungszeit</span>
+                <div className="w-3 h-3 bg-blue-500 dark:bg-blue-600"></div>
+                <span className="font-mono text-[10px] uppercase tracking-wider">Vorlesungszeit</span>
             </div>
             <div className="flex space-x-2 items-center">
-                <div className="w-3 h-3 rounded-full bg-red-300 dark:bg-red-700"></div>
-                <span className="text-xs sm:text-sm">Prüfungsphase</span>
+                <div className="w-3 h-3 bg-red-500 dark:bg-red-600"></div>
+                <span className="font-mono text-[10px] uppercase tracking-wider">Prüfungsphase</span>
             </div>
             <div className="flex space-x-2 items-center">
-                <div className="w-3 h-3 rounded-full bg-green-300 dark:bg-green-700"></div>
-                <span className="text-xs sm:text-sm">Feiertage</span>
+                <div className="w-3 h-3 bg-green-500 dark:bg-green-600"></div>
+                <span className="font-mono text-[10px] uppercase tracking-wider">Feiertage</span>
             </div>
             <div className="flex space-x-2 items-center">
-                <div className="w-3 h-3 rounded-full bg-amber-300 dark:bg-amber-700"></div>
-                <span className="text-xs sm:text-sm">Semesterpause</span>
+                <div className="w-3 h-3 bg-amber-500 dark:bg-amber-600"></div>
+                <span className="font-mono text-[10px] uppercase tracking-wider">Semesterpause</span>
             </div>
         </div>
     );

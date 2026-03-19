@@ -27,20 +27,20 @@ const MAX_FUTURE_DAYS = 3;
 /* ------------------------------------------------------------------ */
 const MobileTooltip = ({ active, payload, label }: any) =>
     active && payload?.length ? (
-        <div className="bg-white dark:bg-card p-2 border border-border rounded-lg shadow-md text-xs">
-            <p className="font-medium">{label}</p>
+        <div className="bg-card p-2 border-2 border-foreground/10 text-xs">
+            <p className="font-mono font-bold">{label}</p>
             <div className="mt-1 space-y-0.5">
                 {payload.map((e: any) => {
                     const base = e.name.replace(/-pred$/, '');
                     const pred = e.name.endsWith('-pred');
                     return (
                         <div key={e.name} className="flex items-center">
-                            <div className="w-2 h-2 rounded-full mr-1.5" style={{ backgroundColor: e.color }} />
-                            <span className="mr-1.5">
+                            <div className="w-2 h-2 mr-1.5" style={{ backgroundColor: e.color }} />
+                            <span className="mr-1.5 font-mono">
                                 {getDisplayName(base)}
-                                {pred ? ' (Prognose)' : ''}:
+                                {pred ? ' (P)' : ''}:
                             </span>
-                            <span className="font-medium">{e.value}%</span>
+                            <span className="font-mono font-bold">{e.value}%</span>
                         </div>
                     );
                 })}
@@ -69,6 +69,10 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
     useEffect(() => {
         localStorage.setItem('showPredictions', JSON.stringify(showPred));
     }, [showPred]);
+
+    /* ---------- mounted guard (prevents ResponsiveContainer 0x0) -- */
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
 
     /* ---------- visible libs -------------------------------------- */
     const visibleLibs = useMemo(
@@ -134,7 +138,7 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
     );
 
     /* ---------- helpers ------------------------------------------ */
-    if (!data) return null;
+    if (!data || !mounted) return null;
     const formattedDate = format(parseISO(date), 'EEEE, d. MMM yyyy', {
         locale: de,
     });
@@ -158,21 +162,21 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
             <div className="flex justify-end gap-2 mb-4">
                 <button
                     onClick={() => setShowPred((v) => !v)}
-                    className="text-xs px-2 py-1 rounded-full bg-secondary hover:bg-secondary/80 flex items-center gap-1">
+                    className="font-mono text-[10px] uppercase tracking-wider px-2 py-1 border-2 border-foreground/10 hover:border-foreground/30 bg-background flex items-center gap-1">
                     {showPred ? (
                         <>
-                            Prognose <EyeOff className="w-4 h-4" />
+                            Prognose <EyeOff className="w-3 h-3" />
                         </>
                     ) : (
                         <>
-                            Prognose <Eye className="w-4 h-4" />
+                            Prognose <Eye className="w-3 h-3" />
                         </>
                     )}
                 </button>
                 {!isToday(parseISO(date)) && (
                     <button
                         onClick={() => changeDate(format(today, 'yyyy-MM-dd'))}
-                        className="text-xs px-2 py-1 rounded-full bg-accent text-white">
+                        className="font-mono text-[10px] uppercase tracking-wider px-2 py-1 bg-foreground text-background border-2 border-foreground">
                         Heute
                     </button>
                 )}
@@ -181,17 +185,17 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
             {/* Header + Nav */}
             <div className="flex justify-center items-center gap-3 mb-3">
                 <Nav dir="left" onClick={back} />
-                <span className="text-sm">{formattedDate}</span>
+                <span className="font-mono text-xs">{formattedDate}</span>
                 <Nav dir="right" onClick={forward} disabled={!canForward()} />
             </div>
 
             {/* Chart Card */}
-            <div className="bg-white dark:bg-card border border-border rounded-xl p-3 shadow-sm">
-                <div className="h-[24rem]">
+            <div className="bg-card border-2 border-foreground/10 p-3">
+                <div className="h-[24rem] [&_svg]:outline-none">
                     {loading ? (
                         <Spinner />
                     ) : (
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" debounce={50}>
                             <LineChart
                                 key={chartKey}
                                 data={chartData}
@@ -257,8 +261,8 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
                                 key={iso}
                                 disabled={disabled}
                                 onClick={() => changeDate(iso)}
-                                className={`text-xs px-2 py-1 rounded-full whitespace-nowrap transition
-                  ${sel ? 'bg-accent text-white' : 'bg-secondary/50 hover:bg-secondary'}
+                                className={`font-mono text-[10px] px-2 py-1 whitespace-nowrap border transition
+                  ${sel ? 'bg-foreground text-background border-foreground' : 'border-foreground/10 hover:border-foreground/30'}
                   disabled:opacity-50`}>
                                 {label}
                             </button>
@@ -275,7 +279,7 @@ export default function MobileOccupancyGraph({ libraries, favorites, showOnlyFav
 /* ------------------------------------------------------------------ */
 const Spinner = () => (
     <div className="h-full w-full flex items-center justify-center">
-        <div className="h-7 w-7 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+        <div className="h-5 w-5 border-2 border-foreground/20 border-t-foreground animate-spin" />
     </div>
 );
 
@@ -289,8 +293,8 @@ const Nav: React.FC<{
         <button
             onClick={onClick}
             disabled={disabled}
-            className="p-1.5 rounded-lg bg-secondary/50 hover:bg-secondary disabled:opacity-50">
-            <Icon className="w-4 h-4" />
+            className="p-1 border border-foreground/10 hover:border-foreground/30 disabled:opacity-50">
+            <Icon className="w-3.5 h-3.5" />
         </button>
     );
 };

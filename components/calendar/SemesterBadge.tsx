@@ -39,7 +39,7 @@ const SemesterBadge: React.FC<SemesterBadgeProps> = ({ semesterPeriods }) => {
 
     return (
         <div className="mb-4">
-            <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/20 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-200 ring-1 ring-inset ring-blue-700/10 dark:ring-blue-500/30">
+            <span className="inline-flex items-center font-mono text-[10px] uppercase tracking-widest border-2 border-foreground/10 px-3 py-1.5 font-bold">
                 Aktuelles Semester: {getCurrentSemester()}
             </span>
         </div>

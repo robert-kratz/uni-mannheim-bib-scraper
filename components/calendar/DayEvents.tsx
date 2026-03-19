@@ -15,7 +15,7 @@ const DayEvents: React.FC<DayEventsProps> = ({ selectedDate, selectedDayEvents }
 
     return (
         <div className="mt-6 space-y-3">
-            <h3 className="font-medium">Ereignisse am {format(selectedDate, 'dd.MM.yyyy')}:</h3>
+            <h3 className="font-mono font-bold text-sm uppercase tracking-wide">Ereignisse am {format(selectedDate, 'dd.MM.yyyy')}:</h3>
 
             {selectedDayEvents.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -24,30 +24,14 @@ const DayEvents: React.FC<DayEventsProps> = ({ selectedDate, selectedDayEvents }
                             key={idx}
                             onClick={() => handleEventClick(event)}
                             className={`
-                                p-3 rounded-lg border shadow-sm cursor-pointer hover:shadow-md transition-shadow
-                                ${
-                                    event.type === 'lecture'
-                                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                                        : ''
-                                }
-                                ${
-                                    event.type === 'exam'
-                                        ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                                        : ''
-                                }
-                                ${
-                                    event.type === 'holiday'
-                                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                                        : ''
-                                }
-                                ${
-                                    event.type === 'break'
-                                        ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
-                                        : ''
-                                }
+                                p-3 border-2 cursor-pointer hover:bg-secondary/30 transition-colors
+                                ${event.type === 'lecture' ? 'border-l-4 border-l-blue-500 border-foreground/10' : ''}
+                                ${event.type === 'exam' ? 'border-l-4 border-l-red-500 border-foreground/10' : ''}
+                                ${event.type === 'holiday' ? 'border-l-4 border-l-green-500 border-foreground/10' : ''}
+                                ${event.type === 'break' ? 'border-l-4 border-l-amber-500 border-foreground/10' : ''}
                               `}>
-                            <p className="font-medium">{event.name}</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="font-mono font-bold text-sm">{event.name}</p>
+                            <p className="font-mono text-xs text-muted-foreground mt-1">
                                 {format(parseISO(event.start), 'dd.MM.yyyy')} -{' '}
                                 {format(parseISO(event.end), 'dd.MM.yyyy')}
                             </p>
@@ -55,7 +39,7 @@ const DayEvents: React.FC<DayEventsProps> = ({ selectedDate, selectedDayEvents }
                     ))}
                 </div>
             ) : (
-                <p className="text-muted-foreground">Keine Ereignisse an diesem Tag.</p>
+                <p className="font-mono text-xs text-muted-foreground">Keine Ereignisse an diesem Tag.</p>
             )}
         </div>
     );

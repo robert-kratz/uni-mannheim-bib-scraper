@@ -14,7 +14,9 @@ export default {
         },
         extend: {
             fontFamily: {
-                sans: ['SF Pro Display', 'system-ui', 'sans-serif'],
+                sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+                mono: ['var(--font-jetbrains)', 'JetBrains Mono', 'monospace'],
+                heading: ['var(--font-jetbrains)', 'JetBrains Mono', 'monospace'],
             },
             colors: {
                 border: 'hsl(var(--border))',
@@ -70,7 +72,7 @@ export default {
                     '100%': { opacity: '1' },
                 },
                 slideIn: {
-                    '0%': { transform: 'translateY(20px)', opacity: '0' },
+                    '0%': { transform: 'translateY(10px)', opacity: '0' },
                     '100%': { transform: 'translateY(0)', opacity: '1' },
                 },
                 pulse: {
@@ -81,8 +83,8 @@ export default {
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
                 'accordion-up': 'accordion-up 0.2s ease-out',
-                fadeIn: 'fadeIn 0.5s ease-out forwards',
-                slideIn: 'slideIn 0.5s ease-out forwards',
+                fadeIn: 'fadeIn 0.3s ease-out forwards',
+                slideIn: 'slideIn 0.3s ease-out forwards',
                 pulse: 'pulse 2s ease-in-out infinite',
             },
         },

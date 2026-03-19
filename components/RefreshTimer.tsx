@@ -22,14 +22,14 @@ export default function RefreshTimer({ className }: RefreshTimerProps) {
 
     return (
         <div className={cn('flex items-center gap-2 text-sm text-muted-foreground py-1', className || '')}>
-            <span className="text-right">Nächste Aktualisierung in {formattedTime}</span>
+            <span className="font-mono text-xs tracking-wide">Nächste Aktualisierung in {formattedTime}</span>
             <button
                 onClick={() => refreshData()}
                 disabled={loading}
-                className="p-1.5 rounded-full hover:bg-accent transition-colors "
+                className="p-1.5 border border-foreground/10 hover:border-foreground/30 transition-colors"
                 aria-label="Daten aktualisieren">
                 <RefreshCw
-                    className={cn('h-4 w-4 ', loading ? 'animate-spin text-muted-foreground' : 'text-muted-foreground')}
+                    className={cn('h-3.5 w-3.5', loading ? 'animate-spin text-muted-foreground' : 'text-muted-foreground')}
                 />
             </button>
         </div>

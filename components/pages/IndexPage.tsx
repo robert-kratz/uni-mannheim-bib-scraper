@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
-import RefreshTimer from '@/components/RefreshTimer';
+import HeroSection from '@/components/HeroSection';
 import LibraryList from '@/components/LibraryList';
 import OccupancyGraph from '@/components/OccupancyGraph';
 import MobileOccupancyGraph from '@/components/MobileOccupancyGraph';
@@ -91,23 +91,15 @@ export default function IndexPage({ semesterPeriods }: Props) {
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col">
             <Navbar />
-            <main className="container max-w-7xl mx-auto pt-24 px-4 flex-grow">
-                <div className="mb-8 animate-fadeIn">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                        <h1 className="text-3xl sm:text-4xl font-bold mb-2">Uni Mannheim Bibliotheks Manager</h1>
-                        <div className="hidden md:flex">
-                            <RefreshTimer className="self-start sm:self-auto" />
-                        </div>
-                    </div>
-                    <p className="text-muted-foreground">Überblick über die Auslastung der Universitätsbibliotheken</p>
-                    <RefreshTimer className="self-start sm:self-auto block md:hidden" />
-                </div>
+            <main className="container max-w-7xl mx-auto pt-6 px-4 flex-grow">
+                <HeroSection
+                    showOnlyFavorites={showOnlyFavorites}
+                    setShowOnlyFavorites={setShowOnlyFavorites}
+                />
                 <LibraryList
                     libraries={libraries}
                     favorites={favorites}
                     toggleFavorite={toggleFavorite}
-                    showOnlyFavorites={showOnlyFavorites}
-                    setShowOnlyFavorites={setShowOnlyFavorites}
                 />
                 {/* Show current occupancy only if selected date is today */}
                 {isToday(date) && !loading && (
@@ -134,9 +126,11 @@ export default function IndexPage({ semesterPeriods }: Props) {
                     selectedDate={calendarDate}
                     onSelectDate={(date) => setCalendarDate(date)}
                 />
-                <div className="mb-4 flex items-start space-x-2 p-3 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 text-sm">
-                    <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
-                    <p>Alle Angaben sind ohne Gewähr. Die Daten werden alle 10 Minuten aktualisiert. </p>
+                <div className="mb-4 flex items-start space-x-2 p-3 border-2 border-amber-500/30 text-sm">
+                    <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
+                    <p className="font-mono text-xs text-muted-foreground">
+                        Alle Angaben sind ohne Gewähr. Die Daten werden alle 10 Minuten aktualisiert.
+                    </p>
                 </div>
             </main>
 

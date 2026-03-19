@@ -20,12 +20,12 @@ const MonthView: React.FC<MonthViewProps> = ({
     getDayColor,
 }) => {
     return (
-        <div className="bg-white dark:bg-card rounded-xl border border-border shadow-sm p-4">
-            <h3 className="text-center font-medium mb-4">{format(monthDate, 'MMMM yyyy', { locale: de })}</h3>
+        <div className="bg-card border-2 border-foreground/10 p-4">
+            <h3 className="text-center font-mono font-bold text-sm uppercase tracking-wide mb-4">{format(monthDate, 'MMMM yyyy', { locale: de })}</h3>
 
             <div className="grid grid-cols-7 mb-2">
                 {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((day) => (
-                    <div key={day} className="text-center text-xs text-muted-foreground font-medium">
+                    <div key={day} className="text-center font-mono text-[10px] text-muted-foreground font-medium uppercase">
                         {day}
                     </div>
                 ))}
@@ -46,7 +46,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                             key={format(day, 'yyyy-MM-dd')}
                             onClick={() => onSelectDate(day)}
                             className={`
-                                h-8 flex items-center justify-center text-xs sm:text-sm transition-all-200 relative
+                                h-8 flex items-center justify-center font-mono text-xs transition-all duration-200 relative
                                 ${isSelected ? 'font-bold z-10' : ''}
                               `}>
                             <span
@@ -55,7 +55,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                                   `}></span>
                             <span
                                 className={`
-                                    ${isSelected ? 'bg-accent text-white rounded-full w-7 h-7 flex items-center justify-center z-20' : 'z-20 relative'}
+                                    ${isSelected ? 'bg-foreground text-background w-7 h-7 flex items-center justify-center z-20' : 'z-20 relative'}
                                   `}>
                                 {format(day, 'd')}
                             </span>

@@ -71,10 +71,10 @@ const CurrentOccupancy: React.FC<CurrentOccupancyProps> = ({ libraries, favorite
     return (
         <div className="mb-8 animate-slideIn">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-medium">Aktuelle Auslastung</h2>
+                <h2 className="text-lg font-mono font-bold uppercase tracking-wide">Aktuelle Auslastung</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {displayLibs.map((library) => {
                     const cur = getCurrentOccupancyData(library.id);
                     if (!cur) return null;
@@ -82,23 +82,24 @@ const CurrentOccupancy: React.FC<CurrentOccupancyProps> = ({ libraries, favorite
                     return (
                         <div
                             key={library.id}
-                            className="p-4 rounded-xl bg-white dark:bg-card border border-border transition-all-300 hover:shadow-md">
-                            <div className="flex items-center justify-between mb-2">
+                            className="p-4 bg-card border-2 border-foreground/10 transition-all duration-200"
+                            style={{ borderLeftWidth: '4px', borderLeftColor: library.color }}>
+                            <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: library.color }} />
-                                    <h3 className="font-medium">{getDisplayName(library.name)}</h3>
+                                    <div className="w-2.5 h-2.5" style={{ backgroundColor: library.color }} />
+                                    <h3 className="font-mono font-semibold text-sm">{getDisplayName(library.name)}</h3>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <span className="text-sm font-medium">{cur.occupancy}%</span>
-                                    {cur.trend === 'up' && <ArrowUp size={18} className="text-red-500" />}
-                                    {cur.trend === 'stable' && <ArrowRight size={18} className="text-gray-500" />}
-                                    {cur.trend === 'down' && <ArrowDown size={18} className="text-green-500" />}
+                                    <span className="font-mono text-lg font-bold">{cur.occupancy}%</span>
+                                    {cur.trend === 'up' && <ArrowUp size={16} className="text-red-600" />}
+                                    {cur.trend === 'stable' && <ArrowRight size={16} className="text-muted-foreground" />}
+                                    {cur.trend === 'down' && <ArrowDown size={16} className="text-green-600" />}
                                 </div>
                             </div>
 
                             <Progress
                                 value={cur.occupancy}
-                                className="h-2"
+                                className="h-1.5"
                                 indicatorClassName={getOccupancyColor(cur.occupancy)}
                             />
                         </div>

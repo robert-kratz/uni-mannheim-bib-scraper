@@ -17,12 +17,14 @@
   },
   "dependencies": {
     "@radix-ui/react-progress": "^1.1.8",
+    "@serwist/next": "^9.5.7",
     "autoprefixer": "^10.4.27",
     "axios": "^1.13.6",
     "cheerio": "^1.2.0",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.1",
+    "framer-motion": "^12.38.0",
     "fs": "0.0.1-security",
     "lucide-react": "^0.577.0",
     "luxon": "^3.7.2",
@@ -37,6 +39,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "recharts": "^3.8.0",
+    "serwist": "^9.5.7",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^4.3.6"
   },

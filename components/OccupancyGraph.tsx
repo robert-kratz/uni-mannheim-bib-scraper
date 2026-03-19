@@ -28,20 +28,20 @@ const MAX_FUTURE_DAYS = 3;
 /* ------------------------------------------------------------------ */
 const CustomTooltip = ({ active, payload, label }: any) =>
     active && payload?.length ? (
-        <div className="bg-white dark:bg-card p-3 border border-border rounded-lg shadow-md">
-            <p className="font-medium text-sm">{label}</p>
+        <div className="bg-card p-3 border-2 border-foreground/10">
+            <p className="font-mono font-bold text-sm">{label}</p>
             <div className="mt-1.5 space-y-1">
                 {payload.map((e: any) => {
                     const base = e.name.replace(/-pred$/, '');
                     const pred = e.name.endsWith('-pred');
                     return (
                         <div key={e.name} className="flex items-center text-sm">
-                            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: e.color }} />
-                            <span className="mr-2">
+                            <div className="w-2.5 h-2.5 mr-2" style={{ backgroundColor: e.color }} />
+                            <span className="mr-2 font-mono text-xs">
                                 {getDisplayName(base)}
-                                {pred ? ' (Prognose)' : ''}
+                                {pred ? ' (P)' : ''}
                             </span>
-                            <span className="font-medium">{e.value}%</span>
+                            <span className="font-mono font-bold text-xs">{e.value}%</span>
                         </div>
                     );
                 })}
@@ -146,35 +146,35 @@ export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites
             <div className="flex justify-end gap-2 mb-4">
                 <button
                     onClick={() => setShowPred((v) => !v)}
-                    className="text-sm px-3 py-1 rounded-full bg-secondary hover:bg-secondary/80 transition flex items-center gap-1">
+                    className="font-mono text-xs uppercase tracking-wider px-3 py-1.5 border-2 border-foreground/10 hover:border-foreground/30 bg-background transition flex items-center gap-1.5">
                     {showPred ? (
                         <>
-                            Prognose ausblenden <EyeOff className="w-4 h-4" />
+                            Prognose aus <EyeOff className="w-3.5 h-3.5" />
                         </>
                     ) : (
                         <>
-                            Prognose anzeigen <Eye className="w-4 h-4" />
+                            Prognose an <Eye className="w-3.5 h-3.5" />
                         </>
                     )}
                 </button>
                 {!isToday(parseISO(date)) && (
                     <button
                         onClick={() => changeDate(format(today, 'yyyy-MM-dd'))}
-                        className="text-sm px-3 py-1 rounded-full bg-accent text-white transition">
-                        Zurück zu Heute
+                        className="font-mono text-xs uppercase tracking-wider px-3 py-1.5 bg-foreground text-background border-2 border-foreground transition">
+                        Heute
                     </button>
                 )}
             </div>
 
             {/* Card */}
-            <div className="bg-white dark:bg-card rounded-xl border border-border p-4 shadow-sm">
+            <div className="bg-card border-2 border-foreground/10 p-4">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:justify-between mb-4 gap-2">
-                    <h2 className="text-xl font-medium">Bibliotheksauslastung</h2>
+                    <h2 className="text-lg font-mono font-bold uppercase tracking-wide">Bibliotheksauslastung</h2>
                     <div className="flex items-center gap-2">
                         <Nav dir="left" onClick={back} disabled={loading} />
                         <span
-                            className="text-sm font-medium px-2 cursor-pointer"
+                            className="font-mono text-xs px-2 cursor-pointer"
                             onClick={() => router.push('?date=' + date)}>
                             {formattedDate}
                         </span>
@@ -183,11 +183,11 @@ export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites
                 </div>
 
                 {/* Chart */}
-                <div className="h-[26rem]">
+                <div className="h-[26rem] [&_svg]:outline-none">
                     {loading ? (
                         <Spinner />
                     ) : (
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" debounce={50}>
                             <LineChart
                                 key={chartKey}
                                 data={chartData}
@@ -246,15 +246,15 @@ export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites
                     {quickDates.map((d) => {
                         const iso = format(d, 'yyyy-MM-dd');
                         const isSelected = iso === date;
-                        const label = format(d, 'EEE dd.MM', { locale: de }); // Mo 20.05
+                        const label = format(d, 'EEE dd.MM', { locale: de });
                         const disabled = isAfter(d, addDays(today, MAX_FUTURE_DAYS));
                         return (
                             <button
                                 key={iso}
                                 disabled={disabled}
                                 onClick={() => changeDate(iso)}
-                                className={`text-xs sm:text-sm px-3 py-1 rounded-full whitespace-nowrap transition
-                  ${isSelected ? 'bg-accent text-white' : 'bg-secondary/50 hover:bg-secondary'}
+                                className={`font-mono text-xs px-3 py-1 whitespace-nowrap border transition
+                  ${isSelected ? 'bg-foreground text-background border-foreground' : 'border-foreground/10 hover:border-foreground/30'}
                   disabled:opacity-50`}>
                                 {label}
                             </button>
@@ -269,7 +269,7 @@ export default function OccupancyGraph({ libraries, favorites, showOnlyFavorites
 /* ---------------- helpers ---------------- */
 const Spinner = () => (
     <div className="h-full w-full flex items-center justify-center">
-        <div className="h-8 w-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+        <div className="h-6 w-6 border-2 border-foreground/20 border-t-foreground animate-spin" />
     </div>
 );
 
@@ -284,8 +284,8 @@ const Nav: React.FC<{
             onClick={onClick}
             disabled={disabled}
             aria-label={dir === 'left' ? 'Previous day' : 'Next day'}
-            className="p-1.5 rounded-lg bg-secondary/50 hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition">
-            <Icon className="w-5 h-5" />
+            className="p-1 border border-foreground/10 hover:border-foreground/30 disabled:opacity-50 disabled:cursor-not-allowed transition">
+            <Icon className="w-4 h-4" />
         </button>
     );
 };

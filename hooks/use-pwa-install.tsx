@@ -12,8 +12,21 @@ interface BeforeInstallPromptEvent extends Event {
 export function usePWAInstall() {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [isInstallable, setIsInstallable] = useState(false);
+    const [isIOS, setIsIOS] = useState(false);
+    const [isStandalone, setIsStandalone] = useState(false);
 
     useEffect(() => {
+        // Detect iOS (iPhone, iPad, iPod)
+        const ua = navigator.userAgent;
+        const isiOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        setIsIOS(isiOS);
+
+        // Detect if already running as installed PWA
+        const standalone =
+            window.matchMedia('(display-mode: standalone)').matches ||
+            ('standalone' in navigator && (navigator as unknown as { standalone: boolean }).standalone === true);
+        setIsStandalone(standalone);
+
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -24,9 +37,9 @@ export function usePWAInstall() {
         const handleAppInstalled = () => {
             setIsInstallable(false);
             setDeferredPrompt(null);
-            const platform = navigator.userAgent.includes('Android')
+            const platform = ua.includes('Android')
                 ? 'android'
-                : navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')
+                : /iPhone|iPad/.test(ua)
                 ? 'ios'
                 : 'desktop';
             analytics.trackPWAInstall(platform);
@@ -58,5 +71,5 @@ export function usePWAInstall() {
         return false;
     };
 
-    return { isInstallable, promptInstall };
+    return { isInstallable, isIOS, isStandalone, promptInstall };
 }
