@@ -6,6 +6,7 @@
     "Virgil Baclanov <https://github.com/its-gil>"
   ],
   "private": false,
+  "packageManager": "pnpm@10.32.1",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
